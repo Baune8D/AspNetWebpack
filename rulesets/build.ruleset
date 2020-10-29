@@ -3,8 +3,6 @@
   <Include Path="shared.ruleset" Action="Default" />
   <Rules AnalyzerId="Microsoft.CodeQuality.Analyzers" RuleNamespace="Microsoft.CodeQuality.Analyzers">
     <Rule Id="CA1062" Action="None" />
-    <Rule Id="CA1707" Action="None" />
-    <Rule Id="CA1724" Action="None" />
     <Rule Id="CA2225" Action="None" />
   </Rules>
   <Rules AnalyzerId="Microsoft.CodeAnalysis.CSharp" RuleNamespace="Microsoft.CodeAnalysis.CSharp">
@@ -14,7 +12,14 @@
   </Rules>
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
     <Rule Id="SA1004" Action="None" />
+    <Rule Id="SA1134" Action="None" />
+    <Rule Id="SA1201" Action="None" />
+    <Rule Id="SA1202" Action="None" />
+    <Rule Id="SA1306" Action="None" />
+    <Rule Id="SA1310" Action="None" />
+    <Rule Id="SA1400" Action="None" />
     <Rule Id="SA1506" Action="None" />
+    <Rule Id="SA1512" Action="None" />
     <Rule Id="SA1600" Action="None" />
     <Rule Id="SA1626" Action="None" />
   </Rules>

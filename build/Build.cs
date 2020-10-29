@@ -1,4 +1,5 @@
-using JetBrains.Annotations;
+using System;
+using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.Execution;
@@ -12,10 +13,12 @@ using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Local
+
 [CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
-[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-internal class Build : NukeBuild
+class Build : NukeBuild
 {
     /// Support plugins are available for:
     ///   - JetBrains ReSharper        https://nuke.build/resharper
@@ -23,94 +26,133 @@ internal class Build : NukeBuild
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
 
-    private static AbsolutePath _sourceDirectory = RootDirectory / "src";
-    private static AbsolutePath _artifactsDirectory = RootDirectory / "artifacts";
-    private static AbsolutePath _coverageDirectory = RootDirectory / "coverage";
+    static readonly AbsolutePath SourceDirectory = RootDirectory / "src";
+    static readonly AbsolutePath ArtifactsDirectory = RootDirectory / "artifacts";
+    static readonly AbsolutePath CoverageDirectory = RootDirectory / "coverage";
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
-    private readonly Configuration _configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
+    readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    [Solution]
-    private readonly Solution _solution;
+    [Parameter] readonly bool APPVEYOR_REPO_TAG;
+    [Parameter] readonly string APPVEYOR_REPO_BRANCH;
+    [Parameter] readonly string MYGET_API_KEY;
+    [Parameter] readonly string NUGET_API_KEY;
+
+    [Solution] readonly Solution Solution;
 
     [GitVersion(Framework = "netcoreapp3.1", NoFetch = true)]
-    private readonly GitVersion _gitVersion;
+    readonly GitVersion GitVersion;
 
-    private Target Clean => _ => _
+    bool IsSymbolPackage(AbsolutePath path) => path.ToString().EndsWith("symbols.nupkg", StringComparison.Ordinal);
+
+    public static int Main() => Execute<Build>(x => x.Pack);
+
+    Target Clean => _ => _
         .Before(Restore)
         .Executes(() =>
         {
-            _sourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
-            EnsureCleanDirectory(_artifactsDirectory);
+            SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
+            EnsureCleanDirectory(ArtifactsDirectory);
         });
 
-    private Target Restore => _ => _
+    Target Restore => _ => _
         .Executes(() =>
         {
             DotNetRestore(s => s
-                .SetProjectFile(_solution));
+                .SetProjectFile(Solution));
         });
 
-    private Target Compile => _ => _
+    Target Compile => _ => _
         .DependsOn(Restore)
         .Executes(() =>
         {
             DotNetBuild(s => s
-                .SetProjectFile(_solution)
-                .SetConfiguration(_configuration)
-                .SetAssemblyVersion(_gitVersion.AssemblySemVer)
-                .SetFileVersion(_gitVersion.AssemblySemFileVer)
-                .SetInformationalVersion(_gitVersion.InformationalVersion)
+                .SetProjectFile(Solution)
+                .SetConfiguration(Configuration)
+                .SetAssemblyVersion(GitVersion.AssemblySemVer)
+                .SetFileVersion(GitVersion.AssemblySemFileVer)
+                .SetInformationalVersion(GitVersion.InformationalVersion)
                 .EnableNoRestore());
         });
 
-    private Target Test => _ => _
+    Target Test => _ => _
         .DependsOn(Compile)
         .Executes(() =>
         {
-            foreach (var project in _solution.GetProjects("*.Tests"))
+            foreach (var project in Solution.GetProjects("*.Tests"))
             {
                 var settings = new DotNetTestSettings()
                     .SetProjectFile(project)
-                    .SetConfiguration(_configuration)
+                    .SetConfiguration(Configuration)
                     .EnableNoRestore()
                     .EnableNoBuild();
 
-                var outDir = project.GetMSBuildProject(_configuration).GetPropertyValue("OutputPath");
+                var outDir = project.GetMSBuildProject(Configuration).GetPropertyValue("OutputPath");
                 var assembly = project.Directory / outDir / $"{project.Name}.dll";
 
-                EnsureCleanDirectory(_coverageDirectory);
+                EnsureCleanDirectory(CoverageDirectory);
 
                 CoverletTasks.Coverlet(s => s
                     .SetTargetSettings(settings)
                     .SetAssembly(assembly)
-                    .SetOutput(_coverageDirectory / "coverage")
+                    .SetOutput(CoverageDirectory / "coverage")
                     .SetFormat(CoverletOutputFormat.opencover));
 
                 ReportGeneratorTasks.ReportGenerator(s => s
                     .SetFramework("netcoreapp3.0")
-                    .SetTargetDirectory(_coverageDirectory)
-                    .SetReports(_coverageDirectory / "coverage.opencover.xml"));
+                    .SetTargetDirectory(CoverageDirectory)
+                    .SetReports(CoverageDirectory / "coverage.opencover.xml"));
             }
         });
 
-    private Target Pack => _ => _
+    Target Pack => _ => _
         .DependsOn(Test)
-        .Produces(_artifactsDirectory / "*.nupkg")
+        .Produces(ArtifactsDirectory / "*.nupkg")
         .Executes(() =>
         {
-            EnsureCleanDirectory(_artifactsDirectory);
+            EnsureCleanDirectory(ArtifactsDirectory);
 
             DotNetPack(s => s
-                .SetProject(_solution)
-                .SetConfiguration(_configuration)
-                .SetOutputDirectory(_artifactsDirectory)
-                .SetVersion(_gitVersion.NuGetVersionV2)
+                .SetProject(Solution)
+                .SetConfiguration(Configuration)
+                .SetOutputDirectory(ArtifactsDirectory)
+                .SetVersion(GitVersion.NuGetVersionV2)
                 .EnableIncludeSource()
                 .EnableIncludeSymbols()
                 .EnableNoRestore()
                 .EnableNoBuild());
         });
 
-    public static int Main() => Execute<Build>(x => x.Pack);
+    Target Push => _ => _
+        .DependsOn(Pack)
+        .Executes(() =>
+        {
+            if (APPVEYOR_REPO_TAG)
+            {
+                CoverageDirectory.GlobFiles("*.nupkg")
+                    .Where(x => !IsSymbolPackage(x))
+                    .ForEach(x =>
+                    {
+                        DotNetNuGetPush(s => s
+                            .SetTargetPath(x)
+                            .SetSource("https://api.nuget.org/v3/index.json")
+                            .SetApiKey(NUGET_API_KEY));
+                    });
+            }
+            else if (APPVEYOR_REPO_BRANCH == "main")
+            {
+                CoverageDirectory.GlobFiles("*.nupkg")
+                    .ForEach(x =>
+                    {
+                        var url = IsSymbolPackage(x)
+                            ? "https://www.myget.org/F/baunegaard/symbols/api/v2/package"
+                            : "https://www.myget.org/F/baunegaard/api/v2/package";
+
+                        DotNetNuGetPush(s => s
+                            .SetTargetPath(x)
+                            .SetSource(url)
+                            .SetApiKey(MYGET_API_KEY));
+                    });
+            }
+        });
 }

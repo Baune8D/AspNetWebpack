@@ -8,14 +8,14 @@ environment:
     secure: 67xG3EuBhuEN98ga7ML6ghSrFEm4Fgap81X+stScNzYSnw6t4lu9HXDxVYKj7ZIr
 
 build_script:
-  - cmd: .\build.cmd
-  - sh: ./build.cmd
+  - cmd: .\build.cmd Push
+  - sh: ./build.cmd Push
 
 after_build:
   - ps: |
       $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
       Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
-      bash codecov.sh -f "coverage.xml"
+      bash codecov.sh -f "coverage/coverage.opencover.xml"
 
 artifacts:
   - path: artifacts/*.nupkg
