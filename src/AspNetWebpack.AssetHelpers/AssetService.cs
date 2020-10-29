@@ -76,16 +76,16 @@ namespace AspNetWebpack.AssetHelpers
         /// <summary>
         /// Gets the full file path.
         /// </summary>
-        /// <param name="resource">The bundle filename.</param>
+        /// <param name="bundle">The bundle filename.</param>
         /// <returns>The full file path.</returns>
-        public virtual async Task<string?> GetBundleAsync(string resource)
+        public virtual async Task<string?> GetBundlePathAsync(string bundle)
         {
-            if (string.IsNullOrEmpty(resource))
+            if (string.IsNullOrEmpty(bundle))
             {
                 return null;
             }
 
-            var file = await GetFromManifestAsync(resource).ConfigureAwait(false);
+            var file = await GetFromManifestAsync(bundle).ConfigureAwait(false);
 
             return file != null
                 ? $"{AssetPath}{file}"
@@ -95,66 +95,89 @@ namespace AspNetWebpack.AssetHelpers
         /// <summary>
         /// Gets a html script tag for the specified asset.
         /// </summary>
-        /// <param name="resource">The name of the Webpack bundle.</param>
+        /// <param name="bundle">The name of the Webpack bundle.</param>
         /// <param name="load">Enum for modifying script load behavior.</param>
         /// <returns>An HtmlString containing the html script tag.</returns>
-        public virtual async Task<HtmlString> GetScriptAsync(string resource, ScriptLoad load = ScriptLoad.Normal)
+        public virtual async Task<HtmlString> GetScriptTagAsync(string bundle, ScriptLoad load = ScriptLoad.Normal)
         {
-            if (string.IsNullOrEmpty(resource))
+            if (string.IsNullOrEmpty(bundle))
             {
                 return HtmlString.Empty;
             }
 
-            if (!Path.HasExtension(resource))
+            if (!Path.HasExtension(bundle))
             {
-                resource += ".js";
+                bundle += ".js";
             }
 
-            var file = await GetFromManifestAsync(resource).ConfigureAwait(false);
+            var file = await GetFromManifestAsync(bundle).ConfigureAwait(false);
 
             return file != null
-                ? new HtmlString(GetScriptTag(file, load))
+                ? new HtmlString(BuildScriptTag(file, load))
+                : HtmlString.Empty;
+        }
+
+        /// <summary>
+        /// Gets a html link tag for the specified asset.
+        /// </summary>
+        /// <param name="bundle">The name of the Webpack bundle.</param>
+        /// <returns>An HtmlString containing the html link tag.</returns>
+        public virtual async Task<HtmlString> GetLinkTagAsync(string bundle)
+        {
+            if (string.IsNullOrEmpty(bundle))
+            {
+                return HtmlString.Empty;
+            }
+
+            if (!Path.HasExtension(bundle))
+            {
+                bundle += ".css";
+            }
+
+            var file = await GetFromManifestAsync(bundle).ConfigureAwait(false);
+
+            return file != null
+                ? new HtmlString(BuildLinkTag(file))
                 : HtmlString.Empty;
         }
 
         /// <summary>
         /// Gets a html style tag for the specified asset.
         /// </summary>
-        /// <param name="resource">The name of the Webpack bundle.</param>
-        /// <param name="load">Enum for modifying style load behavior.</param>
+        /// <param name="bundle">The name of the Webpack bundle.</param>
         /// <returns>An HtmlString containing the html style tag.</returns>
-        public virtual async Task<HtmlString> GetStyleAsync(string resource, StyleLoad load = StyleLoad.Normal)
+        public virtual async Task<HtmlString> GetStyleTagAsync(string bundle)
         {
-            if (string.IsNullOrEmpty(resource))
+            if (string.IsNullOrEmpty(bundle))
             {
                 return HtmlString.Empty;
             }
 
-            if (!Path.HasExtension(resource))
+            if (!Path.HasExtension(bundle))
             {
-                resource += ".css";
+                bundle += ".css";
             }
 
-            var file = await GetFromManifestAsync(resource).ConfigureAwait(false);
+            var file = await GetFromManifestAsync(bundle).ConfigureAwait(false);
 
             return file != null
-                ? new HtmlString(await GetStyleTagAsync(file, load).ConfigureAwait(false))
+                ? new HtmlString(await BuildStyleTagAsync(file).ConfigureAwait(false))
                 : HtmlString.Empty;
         }
 
         /// <summary>
         /// Gets the asset filename from the Webpack manifest.
         /// </summary>
-        /// <param name="resource">The name of the Webpack bundle.</param>
+        /// <param name="bundle">The name of the Webpack bundle.</param>
         /// <returns>The asset filename.</returns>
-        protected virtual async Task<string?> GetFromManifestAsync(string resource)
+        protected virtual async Task<string?> GetFromManifestAsync(string bundle)
         {
             JsonDocument manifest;
 
             if (_manifest == null)
             {
                 var json = _developmentMode
-                    ? await GetDevelopmentManifestAsync(_httpClient, _manifestPath).ConfigureAwait(false)
+                    ? await FetchDevelopmentManifestAsync(_httpClient, _manifestPath).ConfigureAwait(false)
                     : await File.ReadAllTextAsync(_manifestPath).ConfigureAwait(false);
 
                 manifest = JsonDocument.Parse(json);
@@ -170,7 +193,7 @@ namespace AspNetWebpack.AssetHelpers
 
             try
             {
-                return manifest.RootElement.GetProperty(resource).GetString();
+                return manifest.RootElement.GetProperty(bundle).GetString();
             }
             catch (KeyNotFoundException)
             {
@@ -184,7 +207,7 @@ namespace AspNetWebpack.AssetHelpers
         /// <param name="file">The JS file to use in the tag.</param>
         /// <param name="load">Enum for modifying script load behavior.</param>
         /// <returns>A string containing the script tag.</returns>
-        protected virtual string GetScriptTag(string file, ScriptLoad load)
+        protected virtual string BuildScriptTag(string file, ScriptLoad load)
         {
             var crossOrigin = string.Empty;
             if (_developmentMode)
@@ -217,18 +240,27 @@ namespace AspNetWebpack.AssetHelpers
         /// Builds the link/style tag.
         /// </summary>
         /// <param name="file">The CSS file to use in the tag.</param>
-        /// <param name="load">Enum for modifying style load behavior.</param>
         /// <returns>A string containing the link/style tag.</returns>
-        protected virtual async Task<string> GetStyleTagAsync(string file, StyleLoad load)
+        protected virtual string BuildLinkTag(string file)
         {
             if (file == null)
             {
                 throw new ArgumentNullException(nameof(file));
             }
 
-            if (load != StyleLoad.Inline)
+            return $"<link href=\"{AssetPath}{file}\" rel=\"stylesheet\" />";
+        }
+
+        /// <summary>
+        /// Builds the link/style tag.
+        /// </summary>
+        /// <param name="file">The CSS file to use in the tag.</param>
+        /// <returns>A string containing the link/style tag.</returns>
+        protected virtual async Task<string> BuildStyleTagAsync(string file)
+        {
+            if (file == null)
             {
-                return $"<link href=\"{AssetPath}{file}\" rel=\"stylesheet\" />";
+                throw new ArgumentNullException(nameof(file));
             }
 
             if (!_developmentMode && _inlineStyles.ContainsKey(file))
@@ -246,7 +278,7 @@ namespace AspNetWebpack.AssetHelpers
             var fullPath = $"{_assetBaseFilePath}{filename}";
 
             var style = _developmentMode
-                ? await GetDevelopmentStyleAsync(_httpClient, fullPath).ConfigureAwait(false)
+                ? await FetchDevelopmentStyleAsync(_httpClient, fullPath).ConfigureAwait(false)
                 : await File.ReadAllTextAsync(fullPath).ConfigureAwait(false);
 
             var result = $"<style>{style}</style>";
@@ -268,7 +300,7 @@ namespace AspNetWebpack.AssetHelpers
         /// <exception cref="ArgumentNullException">If HttpClient is null.</exception>
         /// <exception cref="Exception">If dev server cannot be reached.</exception>
         // ReSharper disable once MemberCanBeMadeStatic.Global
-        protected virtual async Task<string> GetDevelopmentManifestAsync(HttpClient? httpClient, string manifestPath)
+        protected virtual async Task<string> FetchDevelopmentManifestAsync(HttpClient? httpClient, string manifestPath)
         {
             if (httpClient == null)
             {
@@ -293,7 +325,7 @@ namespace AspNetWebpack.AssetHelpers
         /// <returns>The CSS file content.</returns>
         /// <exception cref="ArgumentNullException">If HttpClient is null.</exception>
         // ReSharper disable once MemberCanBeMadeStatic.Global
-        protected virtual async Task<string> GetDevelopmentStyleAsync(HttpClient? httpClient, string fullPath)
+        protected virtual async Task<string> FetchDevelopmentStyleAsync(HttpClient? httpClient, string fullPath)
         {
             if (httpClient == null)
             {

@@ -1,30 +1,30 @@
 using System;
+using FluentAssertions;
 using Microsoft.AspNetCore.Html;
-using Shouldly;
 
-namespace AspNetWebpack.AssetHelpers.Tests.Internal
+namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests.Internal
 {
     public static class AssertionExtensions
     {
         public static void ShouldBeScriptTag(this HtmlString result, string bundle, ScriptLoad scriptLoad = ScriptLoad.Normal)
         {
-            result.ShouldNotBeNull();
-            result.Value.ShouldStartWith("<script");
-            result.Value.ShouldEndWith("</script>");
-            result.Value.ShouldContain(bundle);
+            result.Should().NotBeNull();
+            result.Value.Should().StartWith("<script");
+            result.Value.Should().EndWith("</script>");
+            result.Value.Should().Contain(bundle);
 
             switch (scriptLoad)
             {
                 case ScriptLoad.Normal:
                     break;
                 case ScriptLoad.Async:
-                    result.Value.ShouldContain(" async>");
+                    result.Value.Should().Contain(" async>");
                     break;
                 case ScriptLoad.Defer:
-                    result.Value.ShouldContain(" defer>");
+                    result.Value.Should().Contain(" defer>");
                     break;
                 case ScriptLoad.AsyncDefer:
-                    result.Value.ShouldContain(" async defer>");
+                    result.Value.Should().Contain(" async defer>");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(scriptLoad), scriptLoad, null);
@@ -33,18 +33,18 @@ namespace AspNetWebpack.AssetHelpers.Tests.Internal
 
         public static void ShouldBeLinkTag(this HtmlString result, string bundle)
         {
-            result.ShouldNotBeNull();
-            result.Value.ShouldStartWith("<link");
-            result.Value.ShouldEndWith(" />");
-            result.Value.ShouldContain(bundle);
+            result.Should().NotBeNull();
+            result.Value.Should().StartWith("<link");
+            result.Value.Should().EndWith(" />");
+            result.Value.Should().Contain(bundle);
         }
 
         public static void ShouldBeStyleTag(this HtmlString result)
         {
-            result.ShouldNotBeNull();
-            result.Value.ShouldStartWith("<style>");
-            result.Value.ShouldEndWith("</style>");
-            result.Value.Length.ShouldBeGreaterThan(15);
+            result.Should().NotBeNull();
+            result.Value.Should().StartWith("<style>");
+            result.Value.Should().EndWith("</style>");
+            result.Value.Length.Should().BeGreaterThan(15);
         }
     }
 }
