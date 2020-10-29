@@ -127,12 +127,9 @@ class Build : NukeBuild
         .DependsOn(Pack)
         .Executes(() =>
         {
-            Logger.Info(APPVEYOR_REPO_TAG);
-            Logger.Info(APPVEYOR_REPO_BRANCH);
-
             if (APPVEYOR_REPO_TAG)
             {
-                CoverageDirectory.GlobFiles("*.nupkg")
+                ArtifactsDirectory.GlobFiles("*.nupkg")
                     .Where(x => !IsSymbolPackage(x))
                     .ForEach(x =>
                     {
@@ -144,7 +141,7 @@ class Build : NukeBuild
             }
             else if (APPVEYOR_REPO_BRANCH == "main")
             {
-                CoverageDirectory.GlobFiles("*.nupkg")
+                ArtifactsDirectory.GlobFiles("*.nupkg")
                     .ForEach(x =>
                     {
                         var url = IsSymbolPackage(x)
