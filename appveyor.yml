@@ -8,9 +8,6 @@ environment:
   NUGET_API_KEY:
     secure: 67xG3EuBhuEN98ga7ML6ghSrFEm4Fgap81X+stScNzYSnw6t4lu9HXDxVYKj7ZIr
 
-configuration:
-  - Release
-
 build_script:
   - cmd: .\build.cmd
 
