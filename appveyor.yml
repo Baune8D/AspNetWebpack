@@ -12,10 +12,10 @@ build_script:
   - sh: ./build.cmd Push
 
 after_build:
-  - ps: |
+  - pwsh: |
       $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
-      Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
-      bash codecov.sh -f "coverage/coverage.opencover.xml"
+      Invoke-WebRequest -RetryIntervalSec 5 -MaximumRetryCount 5 -Uri 'https://codecov.io/bash' -OutFile codecov.sh
+      bash codecov.sh -f "coverage/coverage.opencover.xml" -t $env:CODECOV_TOKEN
 
 artifacts:
   - path: artifacts/*.nupkg
