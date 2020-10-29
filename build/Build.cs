@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.Execution;
@@ -42,8 +40,6 @@ class Build : NukeBuild
 
     [GitVersion(Framework = "netcoreapp3.1", NoFetch = true)]
     readonly GitVersion GitVersion;
-
-    static bool IsSymbolPackage(AbsolutePath path) => path.ToString().EndsWith("symbols.nupkg", StringComparison.Ordinal);
 
     public static int Main() => Execute<Build>(x => x.Pack);
 
@@ -119,6 +115,7 @@ class Build : NukeBuild
                 .SetVersion(GitVersion.NuGetVersionV2)
                 .EnableIncludeSource()
                 .EnableIncludeSymbols()
+                .SetSymbolPackageFormat(DotNetSymbolPackageFormat.snupkg)
                 .EnableNoRestore()
                 .EnableNoBuild());
         });
@@ -130,7 +127,6 @@ class Build : NukeBuild
             if (APPVEYOR_REPO_TAG)
             {
                 ArtifactsDirectory.GlobFiles("*.nupkg")
-                    .Where(x => !IsSymbolPackage(x))
                     .ForEach(x =>
                     {
                         DotNetNuGetPush(s => s
@@ -144,13 +140,18 @@ class Build : NukeBuild
                 ArtifactsDirectory.GlobFiles("*.nupkg")
                     .ForEach(x =>
                     {
-                        var url = IsSymbolPackage(x)
-                            ? "https://www.myget.org/F/baunegaard/symbols/api/v2/package"
-                            : "https://www.myget.org/F/baunegaard/api/v2/package";
-
                         DotNetNuGetPush(s => s
                             .SetTargetPath(x)
-                            .SetSource(url)
+                            .SetSource("https://www.myget.org/F/baunegaard/api/v2/package")
+                            .SetApiKey(MYGET_API_KEY));
+                    });
+
+                ArtifactsDirectory.GlobFiles("*.snupkg")
+                    .ForEach(x =>
+                    {
+                        DotNetNuGetPush(s => s
+                            .SetTargetPath(x)
+                            .SetSource("https://www.myget.org/F/baunegaard/api/v3/index.json")
                             .SetApiKey(MYGET_API_KEY));
                     });
             }
