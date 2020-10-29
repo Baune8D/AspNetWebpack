@@ -5,7 +5,7 @@ environment:
   MYGET_API_KEY:
     secure: 78qy8e6pKfJlQV7RAG5tJOWegzXpjASkUs3aFdVBoPYA5gi6+mWdjbuAmNa5OQPe
   NUGET_API_KEY:
-    secure: 67xG3EuBhuEN98ga7ML6ghSrFEm4Fgap81X+stScNzYSnw6t4lu9HXDxVYKj7ZIr
+    secure: 2sTihXEDFVEQkGFRwSmYMvweUKW2Qphic3dqNJcdh8GZV5OHdDhIrbaVvlGEHLFS
   CODECOV_TOKEN:
     secure: EHy2Ls7M8sCfmxReWmbRxdkNkA/AqTTgg+6SCc1ww1JgHXCFmS/bpHJOzGt1VYAm
 
