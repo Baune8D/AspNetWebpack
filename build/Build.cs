@@ -112,12 +112,5 @@ internal class Build : NukeBuild
             }
         });
 
-    private Target Upload => _ => _
-        .DependsOn(Pack)
-        .Executes(() =>
-        {
-            Appve
-        });
-
     public static int Main() => Execute<Build>(x => x.Pack);
 }
