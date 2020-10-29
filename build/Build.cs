@@ -1,9 +1,6 @@
-using System;
-using System.Linq;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.CI;
-using Nuke.Common.CI.AppVeyor;
 using Nuke.Common.Execution;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
@@ -17,10 +14,15 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
-[AppVeyor(AppVeyorImage.VisualStudio2019, AutoGenerate = false)]
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 internal class Build : NukeBuild
 {
+    /// Support plugins are available for:
+    ///   - JetBrains ReSharper        https://nuke.build/resharper
+    ///   - JetBrains Rider            https://nuke.build/rider
+    ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
+    ///   - Microsoft VSCode           https://nuke.build/vscode
+
     private static AbsolutePath _sourceDirectory = RootDirectory / "src";
     private static AbsolutePath _artifactsDirectory = RootDirectory / "artifacts";
     private static AbsolutePath _coverageDirectory = RootDirectory / "coverage";
