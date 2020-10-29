@@ -1,0 +1,21 @@
+﻿version: '{build}'
+
+image: Visual Studio 2019
+
+environment:
+  MYGET_API_KEY:
+    secure: 78qy8e6pKfJlQV7RAG5tJOWegzXpjASkUs3aFdVBoPYA5gi6+mWdjbuAmNa5OQPe
+  NUGET_API_KEY:
+    secure: 67xG3EuBhuEN98ga7ML6ghSrFEm4Fgap81X+stScNzYSnw6t4lu9HXDxVYKj7ZIr
+
+configuration:
+  - Release
+
+build_script:
+  - ps: .\build.ps1
+
+after_build:
+  - ps: |
+      $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
+      Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
+      bash codecov.sh -f "coverage.xml"

@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetWebpack.AssetHelpers", "src\AspNetWebpack.AssetHelpers\AspNetWebpack.AssetHelpers.csproj", "{4B8FE48A-39E8-4694-8F7E-A630C4E463DE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0733DE44-1329-45E8-9473-4039F9F558D4}"
+ProjectSection(SolutionItems) = preProject
+	.editorconfig = .editorconfig
+	.gitattributes = .gitattributes
+	.gitignore = .gitignore
+	Directory.Build.props = Directory.Build.props
+	LICENSE.txt = LICENSE.txt
+	README.md = README.md
+	stylecop.json = stylecop.json
+EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".vscode", ".vscode", "{4C5CC46A-2A03-4EA9-B42A-6EA4ADFD0AA4}"
+ProjectSection(SolutionItems) = preProject
+	.vscode\extensions.json = .vscode\extensions.json
+	.vscode\settings.json = .vscode\settings.json
+EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetWebpack.AssetHelpers.Tests", "src\AspNetWebpack.AssetHelpers.Tests\AspNetWebpack.AssetHelpers.Tests.csproj", "{ED2ECA36-8457-44C9-A93B-84CC02976D7D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E9E6789A-7758-489A-B813-ED19F261E4DB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rulesets", "rulesets", "{BEDBFC46-D733-4EC4-B18A-5499B83EF457}"
+ProjectSection(SolutionItems) = preProject
+	rulesets\shared.ruleset = rulesets\shared.ruleset
+	rulesets\tests.ruleset = rulesets\tests.ruleset
+	rulesets\build.ruleset = rulesets\build.ruleset
+EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{36E9EBAD-C5AE-48CF-84C7-C807A86D6A4E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{36E9EBAD-C5AE-48CF-84C7-C807A86D6A4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36E9EBAD-C5AE-48CF-84C7-C807A86D6A4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B8FE48A-39E8-4694-8F7E-A630C4E463DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B8FE48A-39E8-4694-8F7E-A630C4E463DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B8FE48A-39E8-4694-8F7E-A630C4E463DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B8FE48A-39E8-4694-8F7E-A630C4E463DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED2ECA36-8457-44C9-A93B-84CC02976D7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED2ECA36-8457-44C9-A93B-84CC02976D7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED2ECA36-8457-44C9-A93B-84CC02976D7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED2ECA36-8457-44C9-A93B-84CC02976D7D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4C5CC46A-2A03-4EA9-B42A-6EA4ADFD0AA4} = {0733DE44-1329-45E8-9473-4039F9F558D4}
+		{4B8FE48A-39E8-4694-8F7E-A630C4E463DE} = {E9E6789A-7758-489A-B813-ED19F261E4DB}
+		{BEDBFC46-D733-4EC4-B18A-5499B83EF457} = {0733DE44-1329-45E8-9473-4039F9F558D4}
+		{ED2ECA36-8457-44C9-A93B-84CC02976D7D} = {E9E6789A-7758-489A-B813-ED19F261E4DB}
+	EndGlobalSection
+EndGlobal
