@@ -1,1 +1,1 @@
-# AspNetWebpack.AssetHandling
+# AspNetWebpack.AssetHelpers
