@@ -12,7 +12,7 @@ configuration:
   - Release
 
 build_script:
-  - ps: .\build.ps1
+  - cmd: .\build.cmd
 
 after_build:
   - ps: |
