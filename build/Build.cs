@@ -4,8 +4,10 @@ using Nuke.Common.CI;
 using Nuke.Common.Execution;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
+using Nuke.Common.Tools.Coverlet;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
+using Nuke.Common.Tools.ReportGenerator;
 using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
@@ -15,25 +17,25 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 internal class Build : NukeBuild
 {
+    private static AbsolutePath _sourceDirectory = RootDirectory / "src";
+    private static AbsolutePath _artifactsDirectory = RootDirectory / "artifacts";
+    private static AbsolutePath _coverageDirectory = RootDirectory / "coverage";
+
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     private readonly Configuration _configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
     [Solution]
     private readonly Solution _solution;
 
-    [GitVersion]
+    [GitVersion(Framework = "netcoreapp3.1", NoFetch = true)]
     private readonly GitVersion _gitVersion;
-
-    private static AbsolutePath SourceDirectory => RootDirectory / "src";
-
-    private static AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
     private Target Clean => _ => _
         .Before(Restore)
         .Executes(() =>
         {
-            SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
-            EnsureCleanDirectory(ArtifactsDirectory);
+            _sourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
+            EnsureCleanDirectory(_artifactsDirectory);
         });
 
     private Target Restore => _ => _
@@ -56,5 +58,34 @@ internal class Build : NukeBuild
                 .EnableNoRestore());
         });
 
-    public static int Main() => Execute<Build>(x => x.Compile);
+    private Target Test => _ => _
+        .DependsOn(Compile)
+        .Executes(() =>
+        {
+            foreach (var project in _solution.GetProjects("*.Tests"))
+            {
+                var settings = new DotNetTestSettings()
+                    .SetProjectFile(project)
+                    .SetConfiguration(_configuration)
+                    .EnableNoBuild();
+
+                var outDir = project.GetMSBuildProject(_configuration).GetPropertyValue("OutputPath");
+                var assembly = project.Directory / outDir / $"{project.Name}.dll";
+
+                EnsureCleanDirectory(_coverageDirectory);
+
+                CoverletTasks.Coverlet(s => s
+                    .SetTargetSettings(settings)
+                    .SetAssembly(assembly)
+                    .SetOutput(_coverageDirectory / "coverage")
+                    .SetFormat(CoverletOutputFormat.opencover));
+
+                ReportGeneratorTasks.ReportGenerator(s => s
+                    .SetFramework("netcoreapp3.0")
+                    .SetTargetDirectory(_coverageDirectory)
+                    .SetReports(_coverageDirectory / "coverage.opencover.xml"));
+            }
+        });
+
+    public static int Main() => Execute<Build>(x => x.Test);
 }
