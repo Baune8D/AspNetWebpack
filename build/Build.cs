@@ -3,6 +3,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.CI;
+using Nuke.Common.CI.AppVeyor;
 using Nuke.Common.Execution;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
@@ -16,6 +17,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
+[AppVeyor(AppVeyorImage.VisualStudio2019, AutoGenerate = false)]
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 internal class Build : NukeBuild
 {
@@ -97,19 +99,15 @@ internal class Build : NukeBuild
         {
             EnsureCleanDirectory(_artifactsDirectory);
 
-            foreach (var project in _solution.GetProjects("AspNetWebpack.*")
-                .Where(x => !x.Name.EndsWith(".Tests", StringComparison.Ordinal)))
-            {
-                DotNetPack(s => s
-                    .SetProject(project)
-                    .SetConfiguration(_configuration)
-                    .SetOutputDirectory(_artifactsDirectory)
-                    .SetVersion(_gitVersion.NuGetVersionV2)
-                    .EnableIncludeSource()
-                    .EnableIncludeSymbols()
-                    .EnableNoRestore()
-                    .EnableNoBuild());
-            }
+            DotNetPack(s => s
+                .SetProject(_solution)
+                .SetConfiguration(_configuration)
+                .SetOutputDirectory(_artifactsDirectory)
+                .SetVersion(_gitVersion.NuGetVersionV2)
+                .EnableIncludeSource()
+                .EnableIncludeSymbols()
+                .EnableNoRestore()
+                .EnableNoBuild());
         });
 
     public static int Main() => Execute<Build>(x => x.Pack);
