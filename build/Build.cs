@@ -43,7 +43,7 @@ class Build : NukeBuild
     [GitVersion(Framework = "netcoreapp3.1", NoFetch = true)]
     readonly GitVersion GitVersion;
 
-    bool IsSymbolPackage(AbsolutePath path) => path.ToString().EndsWith("symbols.nupkg", StringComparison.Ordinal);
+    static bool IsSymbolPackage(AbsolutePath path) => path.ToString().EndsWith("symbols.nupkg", StringComparison.Ordinal);
 
     public static int Main() => Execute<Build>(x => x.Pack);
 
@@ -127,6 +127,9 @@ class Build : NukeBuild
         .DependsOn(Pack)
         .Executes(() =>
         {
+            Logger.Info(APPVEYOR_REPO_TAG);
+            Logger.Info(APPVEYOR_REPO_BRANCH);
+
             if (APPVEYOR_REPO_TAG)
             {
                 CoverageDirectory.GlobFiles("*.nupkg")
