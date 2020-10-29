@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.CI;
@@ -67,6 +69,7 @@ internal class Build : NukeBuild
                 var settings = new DotNetTestSettings()
                     .SetProjectFile(project)
                     .SetConfiguration(_configuration)
+                    .EnableNoRestore()
                     .EnableNoBuild();
 
                 var outDir = project.GetMSBuildProject(_configuration).GetPropertyValue("OutputPath");
@@ -87,5 +90,34 @@ internal class Build : NukeBuild
             }
         });
 
-    public static int Main() => Execute<Build>(x => x.Test);
+    private Target Pack => _ => _
+        .DependsOn(Test)
+        .Produces(_artifactsDirectory / "*.nupkg")
+        .Executes(() =>
+        {
+            EnsureCleanDirectory(_artifactsDirectory);
+
+            foreach (var project in _solution.GetProjects("AspNetWebpack.*")
+                .Where(x => !x.Name.EndsWith(".Tests", StringComparison.Ordinal)))
+            {
+                DotNetPack(s => s
+                    .SetProject(project)
+                    .SetConfiguration(_configuration)
+                    .SetOutputDirectory(_artifactsDirectory)
+                    .SetVersion(_gitVersion.NuGetVersionV2)
+                    .EnableIncludeSource()
+                    .EnableIncludeSymbols()
+                    .EnableNoRestore()
+                    .EnableNoBuild());
+            }
+        });
+
+    private Target Upload => _ => _
+        .DependsOn(Pack)
+        .Executes(() =>
+        {
+            Appve
+        });
+
+    public static int Main() => Execute<Build>(x => x.Pack);
 }
