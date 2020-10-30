@@ -1,11 +1,9 @@
-using JetBrains.Annotations;
-
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 namespace AspNetWebpack.AssetHelpers
 {
     /// <summary>
     /// Webpack options configured in appsettings.
     /// </summary>
-    [UsedImplicitly(ImplicitUseKindFlags.Assign, ImplicitUseTargetFlags.WithMembers)]
     public class WebpackOptions
     {
         /// <summary>
