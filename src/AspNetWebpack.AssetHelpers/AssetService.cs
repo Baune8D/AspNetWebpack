@@ -17,12 +17,6 @@ namespace AspNetWebpack.AssetHelpers
     public class AssetService : IAssetService
     {
         private readonly Dictionary<string, string> _inlineStyles = new Dictionary<string, string>();
-
-        private readonly HttpClient? _httpClient;
-        private readonly bool _developmentMode;
-        private readonly string _assetBaseFilePath;
-        private readonly string _manifestPath;
-
         private JsonDocument? _manifest;
 
         /// <summary>
@@ -44,26 +38,20 @@ namespace AspNetWebpack.AssetHelpers
                 throw new ArgumentNullException(nameof(options));
             }
 
-            _developmentMode = env.IsDevelopment();
+            DevelopmentMode = env.IsDevelopment();
 
-            if (_developmentMode)
+            if (DevelopmentMode)
             {
-                _httpClient = httpClientFactory.CreateClient();
+                HttpClient = httpClientFactory.CreateClient();
             }
 
-            _manifestPath = _assetBaseFilePath + options.Value.ManifestFile;
+            AssetBaseFilePath = env.IsDevelopment()
+                ? options.Value.InternalDevServer + options.Value.AssetsPublicPath
+                : env.WebRootPath + options.Value.AssetsPublicPath;
 
-            switch (env.EnvironmentName)
-            {
-                case "Development":
-                    _assetBaseFilePath = options.Value.InternalDevServer + options.Value.AssetsPublicPath;
-                    break;
-                default:
-                    _assetBaseFilePath = env.WebRootPath + options.Value.AssetsPublicPath;
-                    break;
-            }
+            ManifestPath = AssetBaseFilePath + options.Value.ManifestFile;
 
-            AssetPath = _developmentMode
+            AssetPath = DevelopmentMode
                 ? options.Value.PublicDevServer + options.Value.AssetsPublicPath
                 : options.Value.AssetsPublicPath;
         }
@@ -72,6 +60,26 @@ namespace AspNetWebpack.AssetHelpers
         /// Gets web path for UI assets.
         /// </summary>
         public string AssetPath { get; }
+
+        /// <summary>
+        /// Gets HttpClient for retrieving the manifest in development mode.
+        /// </summary>
+        protected HttpClient? HttpClient { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether development mode is active.
+        /// </summary>
+        protected bool DevelopmentMode { get; }
+
+        /// <summary>
+        /// Gets full directory path for assets.
+        /// </summary>
+        protected string AssetBaseFilePath { get; }
+
+        /// <summary>
+        /// Gets full path for the manifest.
+        /// </summary>
+        protected string ManifestPath { get; }
 
         /// <summary>
         /// Gets the full file path.
@@ -176,12 +184,12 @@ namespace AspNetWebpack.AssetHelpers
 
             if (_manifest == null)
             {
-                var json = _developmentMode
-                    ? await FetchDevelopmentManifestAsync(_httpClient, _manifestPath).ConfigureAwait(false)
-                    : await File.ReadAllTextAsync(_manifestPath).ConfigureAwait(false);
+                var json = DevelopmentMode
+                    ? await FetchDevelopmentManifestAsync(HttpClient, ManifestPath).ConfigureAwait(false)
+                    : await File.ReadAllTextAsync(ManifestPath).ConfigureAwait(false);
 
                 manifest = JsonDocument.Parse(json);
-                if (!_developmentMode)
+                if (!DevelopmentMode)
                 {
                     _manifest = manifest;
                 }
@@ -210,12 +218,12 @@ namespace AspNetWebpack.AssetHelpers
         protected virtual string BuildScriptTag(string file, ScriptLoad load)
         {
             var crossOrigin = string.Empty;
-            if (_developmentMode)
+            if (DevelopmentMode)
             {
                 crossOrigin = "crossorigin=\"anonymous\"";
             }
 
-            var loadType = _developmentMode ? " " : string.Empty;
+            var loadType = DevelopmentMode ? " " : string.Empty;
             switch (load)
             {
                 case ScriptLoad.Normal:
@@ -263,7 +271,7 @@ namespace AspNetWebpack.AssetHelpers
                 throw new ArgumentNullException(nameof(file));
             }
 
-            if (!_developmentMode && _inlineStyles.ContainsKey(file))
+            if (!DevelopmentMode && _inlineStyles.ContainsKey(file))
             {
                 return _inlineStyles[file];
             }
@@ -275,15 +283,15 @@ namespace AspNetWebpack.AssetHelpers
                 filename = filename.Substring(0, queryIndex);
             }
 
-            var fullPath = $"{_assetBaseFilePath}{filename}";
+            var fullPath = $"{AssetBaseFilePath}{filename}";
 
-            var style = _developmentMode
-                ? await FetchDevelopmentStyleAsync(_httpClient, fullPath).ConfigureAwait(false)
+            var style = DevelopmentMode
+                ? await FetchDevelopmentStyleAsync(HttpClient, fullPath).ConfigureAwait(false)
                 : await File.ReadAllTextAsync(fullPath).ConfigureAwait(false);
 
             var result = $"<style>{style}</style>";
 
-            if (!_developmentMode)
+            if (!DevelopmentMode)
             {
                 _inlineStyles.Add(file, result);
             }
