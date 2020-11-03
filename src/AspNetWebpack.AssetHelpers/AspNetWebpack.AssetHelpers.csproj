@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Title>Asset utilities for AspNetWebpack</Title>
+    <Description>Asset utilities for AspNetWebpack</Description>
     <Authors>Morten Larsen</Authors>
     <PackageProjectUrl>https://github.com/Baune8D/AspNetWebpack.AssetHelpers</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Baune8D/AspNetWebpack.AssetHelpers</RepositoryUrl>
@@ -14,5 +14,5 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-  
+
 </Project>
