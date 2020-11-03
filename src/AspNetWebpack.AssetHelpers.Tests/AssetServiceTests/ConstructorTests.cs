@@ -1,5 +1,5 @@
 using System;
-using AspNetWebpack.AssetHelpers.Tests.AssetServiceTests.Internal;
+using AspNetWebpack.AssetHelpers.Testing;
 using FluentAssertions;
 using Xunit;
 

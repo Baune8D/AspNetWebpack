@@ -2,7 +2,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests.Internal
+namespace AspNetWebpack.AssetHelpers.Testing
 {
     public sealed class TestableConstructor : AssetService
     {

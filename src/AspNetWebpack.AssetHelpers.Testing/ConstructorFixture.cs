@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using Moq;
 
-namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests.Internal
+namespace AspNetWebpack.AssetHelpers.Testing
 {
     public sealed class ConstructorFixture : IDisposable
     {

@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 
-namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests.Internal
+namespace AspNetWebpack.AssetHelpers.Testing
 {
     public class GetBundlePathFixture : AssetServiceFixture
     {
@@ -20,7 +20,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests.Internal
 
         public async Task<string?> GetBundlePathAsync()
         {
-            return await AssetService.GetBundlePathAsync(Bundle);
+            return await AssetService.GetBundlePathAsync(Bundle).ConfigureAwait(false);
         }
 
         public void Verify(string? result)

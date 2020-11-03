@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Html;
 using Moq;
 using Moq.Protected;
 
-namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests.Internal
+namespace AspNetWebpack.AssetHelpers.Testing
 {
     public class GetScriptTagFixture : AssetServiceFixture
     {
@@ -27,7 +27,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests.Internal
 
         public async Task<HtmlString> GetScriptTagAsync()
         {
-            return await AssetService.GetScriptTagAsync(Bundle, ScriptLoad);
+            return await AssetService.GetScriptTagAsync(Bundle, ScriptLoad).ConfigureAwait(false);
         }
 
         public void Verify(HtmlString result)

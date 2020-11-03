@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace AspNetWebpack.AssetHelpers.Tests.Internal
+namespace AspNetWebpack.AssetHelpers.Testing
 {
     public class HtmlHelperStub : IHtmlHelper
     {

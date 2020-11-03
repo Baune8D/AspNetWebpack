@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Html;
 using Moq;
 using Moq.Protected;
 
-namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests.Internal
+namespace AspNetWebpack.AssetHelpers.Testing
 {
     public class GetLinkTagFixture : AssetServiceFixture
     {
@@ -23,7 +23,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests.Internal
 
         public async Task<HtmlString> GetLinkTagAsync()
         {
-            return await AssetService.GetLinkTagAsync(Bundle);
+            return await AssetService.GetLinkTagAsync(Bundle).ConfigureAwait(false);
         }
 
         public void Verify(HtmlString result)

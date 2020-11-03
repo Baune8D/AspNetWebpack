@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AspNetWebpack.AssetHelpers\AspNetWebpack.AssetHelpers.csproj" />
+    <ProjectReference Include="..\AspNetWebpack.AssetHelpers.Testing\AspNetWebpack.AssetHelpers.Testing.csproj" />
   </ItemGroup>
 
 </Project>

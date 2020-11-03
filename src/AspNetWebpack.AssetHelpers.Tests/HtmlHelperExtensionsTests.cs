@@ -1,4 +1,4 @@
-using AspNetWebpack.AssetHelpers.Tests.Internal;
+using AspNetWebpack.AssetHelpers.Testing;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Xunit;

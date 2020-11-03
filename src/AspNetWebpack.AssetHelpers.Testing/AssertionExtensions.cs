@@ -2,7 +2,7 @@ using System;
 using FluentAssertions;
 using Microsoft.AspNetCore.Html;
 
-namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests.Internal
+namespace AspNetWebpack.AssetHelpers.Testing
 {
     public static class AssertionExtensions
     {

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
 
-namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests.Internal
+namespace AspNetWebpack.AssetHelpers.Testing
 {
     public abstract class AssetServiceFixture
     {
