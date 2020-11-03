@@ -135,7 +135,8 @@ class Build : NukeBuild
                             .SetApiKey(NUGET_API_KEY));
                     });
             }
-            else if (APPVEYOR_REPO_BRANCH == "main")
+
+            if (APPVEYOR_REPO_BRANCH == "main")
             {
                 ArtifactsDirectory.GlobFiles("*.nupkg")
                     .ForEach(x =>
