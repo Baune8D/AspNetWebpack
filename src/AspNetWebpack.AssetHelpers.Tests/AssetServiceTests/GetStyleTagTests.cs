@@ -1,7 +1,5 @@
 using System.Threading.Tasks;
 using AspNetWebpack.AssetHelpers.Testing;
-using FluentAssertions;
-using Microsoft.AspNetCore.Html;
 using Xunit;
 
 namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
@@ -18,9 +16,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
             var result = await fixture.GetStyleTagAsync();
 
             // Assert
-            result.Should().Be(HtmlString.Empty);
-            fixture.VerifyGetStyleTag();
-            fixture.VerifyNoOtherCalls();
+            fixture.VerifyEmpty(result);
         }
 
         [Fact]
@@ -33,10 +29,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
             var result = await fixture.GetStyleTagAsync();
 
             // Assert
-            result.Should().Be(HtmlString.Empty);
-            fixture.VerifyGetStyleTag();
-            fixture.VerifyGetFromManifest();
-            fixture.VerifyNoOtherCalls();
+            fixture.VerifyNonExisting(result);
         }
 
         [Fact]
@@ -49,7 +42,20 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
             var result = await fixture.GetStyleTagAsync();
 
             // Assert
-            fixture.Verify(result);
+            fixture.VerifyExisting(result);
+        }
+
+        [Fact]
+        public async Task GetStyleTag_FallbackBundle_ShouldReturnStyleTag()
+        {
+            // Arrange
+            var fixture = new GetStyleTagFixture("NonExistingBundle.css");
+
+            // Act
+            var result = await fixture.GetStyleTagFallbackAsync();
+
+            // Assert
+            fixture.VerifyFallback(result);
         }
     }
 }

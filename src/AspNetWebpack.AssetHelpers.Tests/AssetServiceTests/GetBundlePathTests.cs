@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using AspNetWebpack.AssetHelpers.Testing;
-using FluentAssertions;
 using Xunit;
 
 namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
@@ -17,9 +16,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
             var result = await fixture.GetBundlePathAsync();
 
             // Assert
-            result.Should().BeNull();
-            fixture.VerifyGetBundlePath();
-            fixture.VerifyNoOtherCalls();
+            fixture.VerifyEmpty(result);
         }
 
         [Fact]
@@ -32,10 +29,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
             var result = await fixture.GetBundlePathAsync();
 
             // Assert
-            result.Should().BeNull();
-            fixture.VerifyGetBundlePath();
-            fixture.VerifyGetFromManifest();
-            fixture.VerifyNoOtherCalls();
+            fixture.VerifyNonExisting(result);
         }
 
         [Fact]
@@ -48,7 +42,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
             var result = await fixture.GetBundlePathAsync();
 
             // Assert
-            fixture.Verify(result);
+            fixture.VerifyExisting(result);
         }
     }
 }

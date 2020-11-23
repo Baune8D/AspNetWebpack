@@ -1,7 +1,5 @@
 using System.Threading.Tasks;
 using AspNetWebpack.AssetHelpers.Testing;
-using FluentAssertions;
-using Microsoft.AspNetCore.Html;
 using Xunit;
 
 namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
@@ -18,9 +16,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
             var result = await fixture.GetScriptTagAsync();
 
             // Assert
-            result.Should().Be(HtmlString.Empty);
-            fixture.VerifyGetScriptTag();
-            fixture.VerifyNoOtherCalls();
+            fixture.VerifyEmpty(result);
         }
 
         [Fact]
@@ -33,10 +29,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
             var result = await fixture.GetScriptTagAsync();
 
             // Assert
-            result.Should().Be(HtmlString.Empty);
-            fixture.VerifyGetScriptTag();
-            fixture.VerifyGetFromManifest();
-            fixture.VerifyNoOtherCalls();
+            fixture.VerifyNonExisting(result);
         }
 
         [Fact]
@@ -49,7 +42,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
             var result = await fixture.GetScriptTagAsync();
 
             // Assert
-            fixture.Verify(result);
+            fixture.VerifyExisting(result);
         }
 
         [Fact]
@@ -62,7 +55,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
             var result = await fixture.GetScriptTagAsync();
 
             // Assert
-            fixture.Verify(result);
+            fixture.VerifyExisting(result);
         }
 
         [Fact]
@@ -75,7 +68,7 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
             var result = await fixture.GetScriptTagAsync();
 
             // Assert
-            fixture.Verify(result);
+            fixture.VerifyExisting(result);
         }
 
         [Fact]
@@ -88,7 +81,20 @@ namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
             var result = await fixture.GetScriptTagAsync();
 
             // Assert
-            fixture.Verify(result);
+            fixture.VerifyExisting(result);
+        }
+
+        [Fact]
+        public async Task GetScriptTag_FallbackBundle_ShouldReturnScriptTag()
+        {
+            // Arrange
+            var fixture = new GetScriptTagFixture("NonExistingBundle.css");
+
+            // Act
+            var result = await fixture.GetScriptTagFallbackAsync();
+
+            // Assert
+            fixture.VerifyFallback(result);
         }
     }
 }

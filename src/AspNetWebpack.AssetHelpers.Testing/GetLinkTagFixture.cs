@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.AspNetCore.Html;
 using Moq;
 using Moq.Protected;
@@ -8,12 +9,14 @@ namespace AspNetWebpack.AssetHelpers.Testing
     public class GetLinkTagFixture : AssetServiceFixture
     {
         private const string ExistingBundle = "ExistingBundle.css";
+        private const string FallbackBundle = "FallbackBundle.css";
 
         public GetLinkTagFixture(string bundle)
-            : base(bundle, ExistingBundle)
+            : base(bundle, ExistingBundle, FallbackBundle)
         {
             SetupGetFromManifest();
-            SetupBuildLinkTag();
+            SetupBuildLinkTag(ExistingResultBundle, ExistingResultBundlePath);
+            SetupBuildLinkTag(FallbackResultBundle, FallbackResultBundlePath);
         }
 
         public GetLinkTagFixture()
@@ -26,33 +29,63 @@ namespace AspNetWebpack.AssetHelpers.Testing
             return await AssetService.GetLinkTagAsync(Bundle).ConfigureAwait(false);
         }
 
-        public void Verify(HtmlString result)
+        public async Task<HtmlString> GetLinkTagFallbackAsync()
         {
-            result.ShouldBeLinkTag(ResultBundlePath);
-            VerifyGetLinkTag();
-            VerifyGetFromManifest();
-            VerifyBuildLinkTag();
+            return await AssetService.GetLinkTagAsync(Bundle, FallbackBundle).ConfigureAwait(false);
+        }
+
+        public void VerifyEmpty(HtmlString result)
+        {
+            result.Should().Be(HtmlString.Empty);
+            VerifyGetLinkTag(Bundle, null);
             VerifyNoOtherCalls();
         }
 
-        public void VerifyGetLinkTag()
+        public void VerifyNonExisting(HtmlString result)
         {
-            AssetServiceMock.Verify(x => x.GetLinkTagAsync(Bundle));
+            result.Should().Be(HtmlString.Empty);
+            VerifyGetLinkTag(Bundle, null);
+            VerifyGetFromManifest(Bundle);
+            VerifyNoOtherCalls();
         }
 
-        private void SetupBuildLinkTag()
+        public void VerifyExisting(HtmlString result)
+        {
+            result.ShouldBeLinkTag(ExistingResultBundlePath);
+            VerifyGetLinkTag(Bundle, null);
+            VerifyGetFromManifest(Bundle);
+            VerifyBuildLinkTag(ExistingResultBundle);
+            VerifyNoOtherCalls();
+        }
+
+        public void VerifyFallback(HtmlString result)
+        {
+            result.ShouldBeLinkTag(FallbackResultBundlePath);
+            VerifyGetLinkTag(Bundle, FallbackBundle);
+            VerifyGetFromManifest(Bundle);
+            VerifyGetFromManifest(FallbackBundle);
+            VerifyBuildLinkTag(FallbackResultBundle);
+            VerifyNoOtherCalls();
+        }
+
+        private void VerifyGetLinkTag(string bundle, string? fallbackBundle)
+        {
+            AssetServiceMock.Verify(x => x.GetLinkTagAsync(bundle, fallbackBundle));
+        }
+
+        private void SetupBuildLinkTag(string resultBundle, string resultBundlePath)
         {
             AssetServiceMock
                 .Protected()
-                .Setup<string>("BuildLinkTag", ResultBundle)
-                .Returns($"<link href=\"{ResultBundlePath}\" />");
+                .Setup<string>("BuildLinkTag", resultBundle)
+                .Returns($"<link href=\"{resultBundlePath}\" />");
         }
 
-        private void VerifyBuildLinkTag()
+        private void VerifyBuildLinkTag(string resultBundle)
         {
             AssetServiceMock
                 .Protected()
-                .Verify("BuildLinkTag", Times.Once(), ResultBundle);
+                .Verify("BuildLinkTag", Times.Once(), resultBundle);
         }
     }
 }

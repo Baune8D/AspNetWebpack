@@ -23,16 +23,31 @@ namespace AspNetWebpack.AssetHelpers.Testing
             return await AssetService.GetBundlePathAsync(Bundle).ConfigureAwait(false);
         }
 
-        public void Verify(string? result)
+        public void VerifyEmpty(string? result)
         {
-            result.Should().NotBeNull();
-            result.Should().Be(ResultBundlePath);
+            result.Should().BeNull();
             VerifyGetBundlePath();
-            VerifyGetFromManifest();
             VerifyNoOtherCalls();
         }
 
-        public void VerifyGetBundlePath()
+        public void VerifyNonExisting(string? result)
+        {
+            result.Should().BeNull();
+            VerifyGetBundlePath();
+            VerifyGetFromManifest(Bundle);
+            VerifyNoOtherCalls();
+        }
+
+        public void VerifyExisting(string? result)
+        {
+            result.Should().NotBeNull();
+            result.Should().Be(ExistingResultBundlePath);
+            VerifyGetBundlePath();
+            VerifyGetFromManifest(Bundle);
+            VerifyNoOtherCalls();
+        }
+
+        private void VerifyGetBundlePath()
         {
             AssetServiceMock.Verify(x => x.GetBundlePathAsync(Bundle));
         }

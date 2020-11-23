@@ -29,26 +29,38 @@ namespace AspNetWebpack.AssetHelpers.Testing
             };
         }
 
+        protected AssetServiceFixture(string bundle, string existingBundle, string fallbackBundle)
+            : this(bundle, existingBundle)
+        {
+            FallbackBundle = fallbackBundle;
+        }
+
         protected IAssetService AssetService => AssetServiceMock.Object;
 
         protected Mock<AssetService> AssetServiceMock { get; }
 
-        protected string ResultBundle => $"{ExistingBundle}?v=1234";
+        protected string ExistingResultBundle => $"{ExistingBundle}?v=1234";
 
-        protected string ResultBundlePath => $"{AssetService.AssetPath}{ResultBundle}";
+        protected string ExistingResultBundlePath => $"{AssetService.AssetPath}{ExistingResultBundle}";
+
+        protected string FallbackResultBundle => $"{FallbackBundle}?v=1234";
+
+        protected string FallbackResultBundlePath => $"{AssetService.AssetPath}{FallbackResultBundle}";
 
         protected string Bundle { get; }
 
         private string ExistingBundle { get; }
 
-        public void VerifyGetFromManifest()
+        private string? FallbackBundle { get; }
+
+        protected void VerifyGetFromManifest(string bundle)
         {
             AssetServiceMock
                 .Protected()
-                .Verify("GetFromManifestAsync", Times.Once(), Bundle);
+                .Verify("GetFromManifestAsync", Times.Once(), bundle);
         }
 
-        public void VerifyNoOtherCalls()
+        protected void VerifyNoOtherCalls()
         {
             AssetServiceMock.VerifyNoOtherCalls();
         }
@@ -63,7 +75,15 @@ namespace AspNetWebpack.AssetHelpers.Testing
             AssetServiceMock
                 .Protected()
                 .Setup<Task<string?>>("GetFromManifestAsync", ExistingBundle)
-                .ReturnsAsync(ResultBundle);
+                .ReturnsAsync(ExistingResultBundle);
+
+            if (FallbackBundle != null)
+            {
+                AssetServiceMock
+                    .Protected()
+                    .Setup<Task<string?>>("GetFromManifestAsync", FallbackBundle)
+                    .ReturnsAsync(FallbackResultBundle);
+            }
         }
     }
 }

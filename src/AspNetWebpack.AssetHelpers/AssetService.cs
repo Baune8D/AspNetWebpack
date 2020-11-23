@@ -108,6 +108,18 @@ namespace AspNetWebpack.AssetHelpers
         /// <returns>An HtmlString containing the html script tag.</returns>
         public virtual async Task<HtmlString> GetScriptTagAsync(string bundle, ScriptLoad load = ScriptLoad.Normal)
         {
+            return await GetScriptTagAsync(bundle, null, load).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets a html script tag for the specified asset.
+        /// </summary>
+        /// <param name="bundle">The name of the Webpack bundle.</param>
+        /// <param name="fallbackBundle">The name of the bundle to fallback to if main bundle does not exist.</param>
+        /// <param name="load">Enum for modifying script load behavior.</param>
+        /// <returns>An HtmlString containing the html script tag.</returns>
+        public virtual async Task<HtmlString> GetScriptTagAsync(string bundle, string? fallbackBundle, ScriptLoad load = ScriptLoad.Normal)
+        {
             if (string.IsNullOrEmpty(bundle))
             {
                 return HtmlString.Empty;
@@ -120,6 +132,11 @@ namespace AspNetWebpack.AssetHelpers
 
             var file = await GetFromManifestAsync(bundle).ConfigureAwait(false);
 
+            if (file == null && fallbackBundle != null)
+            {
+                file = await GetFromManifestAsync(fallbackBundle).ConfigureAwait(false);
+            }
+
             return file != null
                 ? new HtmlString(BuildScriptTag(file, load))
                 : HtmlString.Empty;
@@ -129,8 +146,9 @@ namespace AspNetWebpack.AssetHelpers
         /// Gets a html link tag for the specified asset.
         /// </summary>
         /// <param name="bundle">The name of the Webpack bundle.</param>
+        /// <param name="fallbackBundle">The name of the bundle to fallback to if main bundle does not exist.</param>
         /// <returns>An HtmlString containing the html link tag.</returns>
-        public virtual async Task<HtmlString> GetLinkTagAsync(string bundle)
+        public virtual async Task<HtmlString> GetLinkTagAsync(string bundle, string? fallbackBundle = null)
         {
             if (string.IsNullOrEmpty(bundle))
             {
@@ -143,6 +161,11 @@ namespace AspNetWebpack.AssetHelpers
             }
 
             var file = await GetFromManifestAsync(bundle).ConfigureAwait(false);
+
+            if (file == null && fallbackBundle != null)
+            {
+                file = await GetFromManifestAsync(fallbackBundle).ConfigureAwait(false);
+            }
 
             return file != null
                 ? new HtmlString(BuildLinkTag(file))
@@ -153,8 +176,9 @@ namespace AspNetWebpack.AssetHelpers
         /// Gets a html style tag for the specified asset.
         /// </summary>
         /// <param name="bundle">The name of the Webpack bundle.</param>
+        /// <param name="fallbackBundle">The name of the bundle to fallback to if main bundle does not exist.</param>
         /// <returns>An HtmlString containing the html style tag.</returns>
-        public virtual async Task<HtmlString> GetStyleTagAsync(string bundle)
+        public virtual async Task<HtmlString> GetStyleTagAsync(string bundle, string? fallbackBundle = null)
         {
             if (string.IsNullOrEmpty(bundle))
             {
@@ -167,6 +191,11 @@ namespace AspNetWebpack.AssetHelpers
             }
 
             var file = await GetFromManifestAsync(bundle).ConfigureAwait(false);
+
+            if (file == null && fallbackBundle != null)
+            {
+                file = await GetFromManifestAsync(fallbackBundle).ConfigureAwait(false);
+            }
 
             return file != null
                 ? new HtmlString(await BuildStyleTagAsync(file).ConfigureAwait(false))
