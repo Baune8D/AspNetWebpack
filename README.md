@@ -10,6 +10,7 @@ public IWebHostEnvironment Env { get; }
 
 public void ConfigureServices(IServiceCollection services)
 {
+    ...
     services.AddAssetHelpers(Configuration, Env);
 }
 ```
@@ -45,4 +46,42 @@ Use ```AssetService``` to get assets:
 @await AssetService.GetStyleTagAsync("SomeBundle")
 // Generates: <style>Inlined CSS</style
 ```
-Overloads exists on ```GetScriptTagAsync``` to change the script load behaviour to eg. async.
+Overloads exists on ```GetScriptTagAsync``` to change the load behaviour to eg. ```async``` or ```defer```.
+
+A fallback bundle can be set on: ```GetScriptTagAsync```, ```GetLinkTagAsync```, ```GetStyleTagAsync```
+```csharp
+@await AssetService.GetScriptTagAsync("SomeBundle", "FallbackBundle")
+// Generates: <script src="/Path/To/Assets/SomeBundle.js?v=cache-buster"></script>
+// Or if SomeBundle does not exist: <script src="/Path/To/Assets/FallbackBundle.js?v=cache-buster"></script>
+```
+
+## Example _Layout.cshtml
+
+```razor
+@using AspNetWebpack.AssetHelpers
+
+@inject IAssetService AssetService
+
+@{
+    var bundle = ViewData.GetBundleName() ?? Html.GetBundleName();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AspNetWebpack</title>
+    @await RenderSectionAsync("Head", required: false)
+
+    @await AssetService.GetLinkTagAsync(bundle, "Layout");
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    @RenderBody()
+
+    @await AssetService.GetScriptTagAsync(bundle, "Layout", ScriptLoad.Defer);
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+```
