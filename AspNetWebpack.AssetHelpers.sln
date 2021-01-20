@@ -13,7 +13,6 @@ ProjectSection(SolutionItems) = preProject
 	stylecop.json = stylecop.json
 	appveyor.yml = appveyor.yml
 	GitVersion.yml = GitVersion.yml
-	global.json = global.json
 EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".vscode", ".vscode", "{4C5CC46A-2A03-4EA9-B42A-6EA4ADFD0AA4}"
