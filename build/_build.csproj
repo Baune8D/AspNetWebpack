@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageDownload Include="ReportGenerator" Version="[4.7.1]" />
-    <PackageReference Include="Nuke.Common" Version="5.0.0" />
+    <PackageReference Include="Nuke.Common" Version="5.0.2" />
     <PackageDownload Include="coverlet.console" Version="[1.7.2]" />
     <PackageDownload Include="GitVersion.Tool" Version="[5.5.1]" />
   </ItemGroup>
