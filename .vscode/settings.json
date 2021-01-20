@@ -3,6 +3,8 @@
   "files.exclude": {
     ".vs": true,
     ".idea": true,
+    "artifacts": true,
+    "coverage": true,
     "**/bin": true,
     "**/obj": true
   }
