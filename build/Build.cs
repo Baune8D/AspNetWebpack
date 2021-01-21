@@ -38,20 +38,30 @@ class Build : NukeBuild
 
     [Solution] readonly Solution Solution;
 
-    [GitVersion(Framework = "netcoreapp3.1", NoFetch = true)]
-    readonly GitVersion GitVersion;
+    GitVersion GitVersion;
 
     public static int Main() => Execute<Build>(x => x.Pack);
 
     Target Clean => _ => _
-        .Before(Restore)
+        .Before(Version)
         .Executes(() =>
         {
             SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
             EnsureCleanDirectory(ArtifactsDirectory);
         });
 
+    Target Version => _ => _
+        .Executes(() =>
+        {
+            GitVersion = GitVersionTasks.GitVersion(s => s
+                .SetFramework("netcoreapp3.1")
+                .SetUpdateAssemblyInfo(!IsLocalBuild)
+                .EnableNoFetch())
+                .Result;
+        });
+
     Target Restore => _ => _
+        .DependsOn(Version)
         .Executes(() =>
         {
             DotNetRestore(s => s
