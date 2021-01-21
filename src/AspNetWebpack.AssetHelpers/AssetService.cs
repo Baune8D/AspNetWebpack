@@ -350,7 +350,7 @@ namespace AspNetWebpack.AssetHelpers
             }
             catch (HttpRequestException)
             {
-                throw new Exception("Webpack Dev Server not started!");
+                throw new InvalidOperationException("Webpack Dev Server not started!");
             }
         }
 

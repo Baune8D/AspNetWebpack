@@ -44,7 +44,7 @@ namespace AspNetWebpack.AssetHelpers.Testing
             result.Should().NotBeNull();
             result.Value.Should().StartWith("<style>");
             result.Value.Should().EndWith("</style>");
-            result.Value.Length.Should().BeGreaterThan(15);
+            result.Value!.Length.Should().BeGreaterThan(15);
         }
     }
 }

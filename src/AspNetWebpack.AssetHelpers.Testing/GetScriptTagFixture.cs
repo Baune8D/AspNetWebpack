@@ -91,7 +91,7 @@ namespace AspNetWebpack.AssetHelpers.Testing
                 ScriptLoad.Async => $"<script src=\"{resultBundlePath}\" async></script>",
                 ScriptLoad.Defer => $"<script src=\"{resultBundlePath}\" defer></script>",
                 ScriptLoad.AsyncDefer => $"<script src=\"{resultBundlePath}\" async defer></script>",
-                _ => throw new Exception($"{nameof(ScriptLoad)} is invalid!"),
+                _ => throw new ArgumentException($"{nameof(ScriptLoad)} is invalid!"),
             };
 
             AssetServiceMock
