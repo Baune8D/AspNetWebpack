@@ -16,7 +16,7 @@ namespace AspNetWebpack.AssetHelpers
     /// </summary>
     public class AssetService : IAssetService
     {
-        private readonly Dictionary<string, string> _inlineStyles = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> _inlineStyles = new();
         private JsonDocument? _manifest;
 
         /// <summary>
