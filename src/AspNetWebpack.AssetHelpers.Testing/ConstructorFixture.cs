@@ -1,3 +1,8 @@
+// <copyright file="ConstructorFixture.cs" company="Morten Larsen">
+// Copyright (c) Morten Larsen. All rights reserved.
+// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+// </copyright>
+
 using System;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
@@ -6,6 +11,9 @@ using Moq;
 
 namespace AspNetWebpack.AssetHelpers.Testing
 {
+    /// <summary>
+    /// Fixture for testing AssetService constructor.
+    /// </summary>
     public sealed class ConstructorFixture : IDisposable
     {
         private readonly IOptions<WebpackOptions> _options;
@@ -13,6 +21,10 @@ namespace AspNetWebpack.AssetHelpers.Testing
         private readonly Mock<IHttpClientFactory> _httpClientFactory;
         private readonly HttpClient _httpClient;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConstructorFixture"/> class.
+        /// </summary>
+        /// <param name="environment">Environment name.</param>
         public ConstructorFixture(string environment)
         {
             _options = Options.Create(new WebpackOptions
@@ -38,18 +50,29 @@ namespace AspNetWebpack.AssetHelpers.Testing
                 .Returns(_httpClient);
         }
 
+        /// <summary>
+        /// Gets the true WebHostEnvironment object.
+        /// </summary>
         public IWebHostEnvironment WebHostEnvironment => _webHostEnvironment.Object;
 
+        /// <summary>
+        /// Gets the Webpack options.
+        /// </summary>
         public WebpackOptions WebpackOptions => _options.Value;
 
+        /// <inheritdoc />
         public void Dispose()
         {
             _httpClient.Dispose();
         }
 
+        /// <summary>
+        /// Creates a testable constructor.
+        /// </summary>
+        /// <returns>Testable constructor.</returns>
         public TestableConstructor Construct()
         {
-            return new TestableConstructor(_webHostEnvironment.Object, _options, _httpClientFactory.Object);
+            return new(_webHostEnvironment.Object, _options, _httpClientFactory.Object);
         }
     }
 }

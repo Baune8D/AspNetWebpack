@@ -1,3 +1,8 @@
+// <copyright file="HtmlHelperExtensionsTests.cs" company="Morten Larsen">
+// Copyright (c) Morten Larsen. All rights reserved.
+// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+// </copyright>
+
 using AspNetWebpack.AssetHelpers.Testing;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Rendering;

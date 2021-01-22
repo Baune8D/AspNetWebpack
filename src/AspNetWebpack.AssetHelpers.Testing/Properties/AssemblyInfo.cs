@@ -1,3 +1,8 @@
+// <copyright file="AssemblyInfo.cs" company="Morten Larsen">
+// Copyright (c) Morten Larsen. All rights reserved.
+// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+// </copyright>
+
 using System.Reflection;
 
 // These attributes will be patched by GitVersion
