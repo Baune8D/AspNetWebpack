@@ -4,6 +4,7 @@
 // </copyright>
 
 using System.IO.Abstractions;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using Microsoft.AspNetCore.Hosting;
@@ -39,14 +40,15 @@ namespace AspNetWebpack.AssetHelpers.Testing
         /// <summary>
         /// Mock IFileSystem.
         /// </summary>
+        /// <param name="fileContent">The response content of ReadAllText.</param>
         /// <returns>The FileSystem object.</returns>
-        public static Mock<IFileSystem> GetFileSystem()
+        public static Mock<IFileSystem> GetFileSystem(string fileContent)
         {
             var fileSystemMock = new Mock<IFileSystem>();
 
             fileSystemMock
                 .Setup(x => x.File.ReadAllTextAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync($"{{\"{TestValues.JsonBundle}\": \"{TestValues.JsonResultBundle}\"}}");
+                .ReturnsAsync(fileContent);
 
             return fileSystemMock;
         }
@@ -54,15 +56,17 @@ namespace AspNetWebpack.AssetHelpers.Testing
         /// <summary>
         /// Mock IHttpClientFactory.
         /// </summary>
-        /// <param name="httpMessageHandler">The HTTP message handler to use with HttpClient.</param>
+        /// <param name="httpStatusCode">The response status code.</param>
+        /// <param name="content">The response content.</param>
+        /// <param name="json">If the response should be json.</param>
         /// <returns>The HttpClientFactory object.</returns>
-        public static Mock<IHttpClientFactory> GetHttpClientFactory(HttpMessageHandler httpMessageHandler)
+        public static Mock<IHttpClientFactory> GetHttpClientFactory(HttpStatusCode httpStatusCode, string content = "", bool json = false)
         {
             var httpClientFactory = new Mock<IHttpClientFactory>();
 
             httpClientFactory
                 .Setup(x => x.CreateClient(It.IsAny<string>()))
-                .Returns<string>(_ => new HttpClient(httpMessageHandler));
+                .Returns<string>(_ => new HttpClient(new HttpMessageHandlerStub(httpStatusCode, content, json)));
 
             return httpClientFactory;
         }

@@ -6,6 +6,7 @@
 using System;
 using System.ComponentModel;
 using System.IO.Abstractions;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNetWebpack.AssetHelpers.Testing;
@@ -18,6 +19,7 @@ namespace AspNetWebpack.AssetHelpers.Tests
     public sealed class TagBuilderTests : IDisposable
     {
         private const string Bundle = "Bundle.js";
+        private const string HttpClientResponse = "CSS content";
 
         private readonly Mock<IFileSystem> _fileSystemMock;
 
@@ -25,7 +27,7 @@ namespace AspNetWebpack.AssetHelpers.Tests
 
         public TagBuilderTests()
         {
-            _fileSystemMock = DependencyMocker.GetFileSystem();
+            _fileSystemMock = DependencyMocker.GetFileSystem(HttpClientResponse);
         }
 
         private static string ValidBundleResult => $"{TestValues.AssetsWebPath}{Bundle}";
@@ -195,7 +197,7 @@ namespace AspNetWebpack.AssetHelpers.Tests
         {
             // Arrange
             var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(new HttpMessageHandlerStyleStub());
+            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(HttpStatusCode.OK, HttpClientResponse);
             _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object, httpClientFactoryMock.Object);
 
             // Act
@@ -218,7 +220,7 @@ namespace AspNetWebpack.AssetHelpers.Tests
         {
             // Arrange
             var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(new HttpMessageHandlerStyleStub());
+            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(HttpStatusCode.OK, HttpClientResponse);
             _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object, httpClientFactoryMock.Object);
             var bundle = $"{Bundle}?v=123";
 
@@ -258,6 +260,13 @@ namespace AspNetWebpack.AssetHelpers.Tests
             _fileSystemMock.VerifyNoOtherCalls();
         }
 
+        private static void VerifyStyleTag(string result)
+        {
+            result.Should().Contain(HttpClientResponse)
+                .And.StartWith("<style>")
+                .And.EndWith("</style>");
+        }
+
         private void VerifyScriptTag(string result, Mock<ISharedSettings> sharedSettingsMock)
         {
             result.Should().StartWith("<script ")
@@ -267,12 +276,6 @@ namespace AspNetWebpack.AssetHelpers.Tests
             sharedSettingsMock.VerifyGet(x => x.AssetsWebPath, Times.Once);
             sharedSettingsMock.VerifyNoOtherCalls();
             _fileSystemMock.VerifyNoOtherCalls();
-        }
-
-        private static void VerifyStyleTag(string result)
-        {
-            result.Should().StartWith("<style>")
-                .And.EndWith("</style>");
         }
     }
 }

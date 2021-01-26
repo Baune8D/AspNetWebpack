@@ -5,7 +5,7 @@
 
 using System;
 using System.IO.Abstractions;
-using System.Net.Http;
+using System.Net;
 using System.Threading.Tasks;
 using AspNetWebpack.AssetHelpers.Testing;
 using FluentAssertions;
@@ -16,13 +16,15 @@ namespace AspNetWebpack.AssetHelpers.Tests
 {
     public sealed class ManifestServiceTests : IDisposable
     {
+        private static readonly string HttpClientResponse = $"{{\"{TestValues.JsonBundle}\":\"{TestValues.JsonResultBundle}\"}}";
+
         private readonly Mock<IFileSystem> _fileSystemMock;
 
         private ManifestService? _manifestService;
 
         public ManifestServiceTests()
         {
-            _fileSystemMock = DependencyMocker.GetFileSystem();
+            _fileSystemMock = DependencyMocker.GetFileSystem(HttpClientResponse);
         }
 
         public void Dispose()
@@ -50,7 +52,7 @@ namespace AspNetWebpack.AssetHelpers.Tests
         {
             // Arrange
             var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(new HttpMessageHandlerFailStub());
+            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(HttpStatusCode.BadGateway);
             _manifestService = new ManifestService(sharedSettingsMock.Object, _fileSystemMock.Object, httpClientFactoryMock.Object);
 
             // Act
@@ -68,7 +70,7 @@ namespace AspNetWebpack.AssetHelpers.Tests
         {
             // Arrange
             var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(new HttpMessageHandlerManifestStub());
+            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(HttpStatusCode.OK, HttpClientResponse, true);
             _manifestService = new ManifestService(sharedSettingsMock.Object, _fileSystemMock.Object, httpClientFactoryMock.Object);
 
             // Act
@@ -88,7 +90,7 @@ namespace AspNetWebpack.AssetHelpers.Tests
         {
             // Arrange
             var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(new HttpMessageHandlerManifestStub());
+            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(HttpStatusCode.OK, HttpClientResponse, true);
             _manifestService = new ManifestService(sharedSettingsMock.Object, _fileSystemMock.Object, httpClientFactoryMock.Object);
 
             // Act
@@ -108,7 +110,7 @@ namespace AspNetWebpack.AssetHelpers.Tests
         {
             // Arrange
             var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Production);
-            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(new HttpMessageHandlerManifestStub());
+            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(HttpStatusCode.OK, HttpClientResponse, true);
             _manifestService = new ManifestService(sharedSettingsMock.Object, _fileSystemMock.Object, httpClientFactoryMock.Object);
 
             // Act
@@ -128,7 +130,7 @@ namespace AspNetWebpack.AssetHelpers.Tests
         {
             // Arrange
             var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Production);
-            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(new HttpMessageHandlerManifestStub());
+            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(HttpStatusCode.OK, HttpClientResponse, true);
             _manifestService = new ManifestService(sharedSettingsMock.Object, _fileSystemMock.Object, httpClientFactoryMock.Object);
 
             // Act
