@@ -49,7 +49,9 @@ Use ```AssetService``` to get assets:
 @await AssetService.GetStyleTagAsync("SomeBundle")
 // Generates: <style>Inlined CSS</style
 ```
-Overloads exists on ```GetScriptTagAsync``` to change the load behaviour to eg. ```async``` or ```defer```.
+Overloads exists on ```GetBundlePathAsync``` in case no extension is applied to the bundle name.
+
+Overloads exists on ```GetScriptTagAsync``` to change the load behaviour to eg. ```async``` and/or ```defer```.
 
 A fallback bundle can be set on: ```GetScriptTagAsync```, ```GetLinkTagAsync```, ```GetStyleTagAsync```
 ```csharp
