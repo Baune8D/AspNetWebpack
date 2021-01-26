@@ -4,9 +4,11 @@
 // </copyright>
 
 using System;
+using System.IO.Abstractions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace AspNetWebpack.AssetHelpers
@@ -19,32 +21,30 @@ namespace AspNetWebpack.AssetHelpers
         /// <summary>
         /// Adds AssetService and necessary dependencies.
         /// </summary>
-        /// <param name="services">The service collection.</param>
+        /// <param name="serviceCollection">The service collection.</param>
         /// <param name="configuration">The configuration.</param>
-        /// <param name="env">The hosting environment.</param>
+        /// <param name="webHostEnvironment">The hosting environment.</param>
         /// <returns>The modified service collection.</returns>
-        /// <exception cref="ArgumentNullException">If services or configuration is null.</exception>
-        public static IServiceCollection AddAssetHelpers(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
+        public static IServiceCollection AddAssetHelpers(this IServiceCollection serviceCollection, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
             if (configuration == null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            if (env.IsDevelopment())
+            if (webHostEnvironment.IsDevelopment())
             {
-                services.AddHttpClient();
+                serviceCollection.AddHttpClient();
             }
 
-            services.Configure<WebpackOptions>(configuration.GetSection("Webpack"));
-            services.AddSingleton<IAssetService, AssetService>();
+            serviceCollection.Configure<WebpackOptions>(configuration.GetSection("Webpack"));
+            serviceCollection.TryAddScoped<IFileSystem, FileSystem>();
+            serviceCollection.AddSingleton<ISharedSettings, SharedSettings>();
+            serviceCollection.AddSingleton<ITagBuilder, TagBuilder>();
+            serviceCollection.AddSingleton<IManifestService, ManifestService>();
+            serviceCollection.AddSingleton<IAssetService, AssetService>();
 
-            return services;
+            return serviceCollection;
         }
     }
 }

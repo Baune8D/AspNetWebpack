@@ -19,7 +19,6 @@ namespace AspNetWebpack.AssetHelpers
         /// </summary>
         /// <param name="html">The html helper.</param>
         /// <returns>The bundle name.</returns>
-        /// <exception cref="ArgumentNullException">If html is null.</exception>
         public static string GetBundleName(this IHtmlHelper html)
         {
             if (html == null)

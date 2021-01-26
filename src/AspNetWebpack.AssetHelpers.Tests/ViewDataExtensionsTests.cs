@@ -3,6 +3,7 @@
 // Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 // </copyright>
 
+using System;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -12,6 +13,16 @@ namespace AspNetWebpack.AssetHelpers.Tests
 {
     public sealed class ViewDataExtensionsTests
     {
+        [Fact]
+        public void GetBundleName_Null_ShouldThrowArgumentNullException()
+        {
+            // Act
+            Action act = () => ((ViewDataDictionary)null!).GetBundleName();
+
+            // Assert
+            act.Should().ThrowExactly<ArgumentNullException>();
+        }
+
         [Fact]
         public void GetBundleName_Null_ShouldReturnNull()
         {

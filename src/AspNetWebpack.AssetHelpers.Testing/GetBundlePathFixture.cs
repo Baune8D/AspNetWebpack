@@ -3,84 +3,111 @@
 // Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 // </copyright>
 
+using System.ComponentModel;
 using System.Threading.Tasks;
 using FluentAssertions;
 
 namespace AspNetWebpack.AssetHelpers.Testing
 {
     /// <summary>
-    /// Fixture for testing GetBundlePathAsync in AssetService.
+    /// Fixture for testing GetBundlePathAsync function in AssetService.
     /// </summary>
-    public class GetBundlePathFixture : AssetServiceFixture
+    public class GetBundlePathFixture : AssetServiceBaseFixture
     {
-        private const string ExistingBundle = "ExistingBundle.js";
+        /// <summary>
+        /// Valid bundle name with extension.
+        /// </summary>
+        public static readonly string ValidBundleWithExtension = $"{ValidBundleWithoutExtension}.js";
+
+        /// <summary>
+        /// Invalid bundle name with extension.
+        /// </summary>
+        public static readonly string InvalidBundleWithExtension = $"{InvalidBundle}.js";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GetBundlePathFixture"/> class.
         /// </summary>
-        /// <param name="bundle">The bundle name to test against.</param>
-        public GetBundlePathFixture(string bundle)
-            : base(bundle, ExistingBundle)
+        /// <param name="bundle">The bundle name param to be used in GetBundlePathAsync.</param>
+        /// <param name="fileType">The file type param to be used in GetBundlePathAsync.</param>
+        public GetBundlePathFixture(string bundle, FileType? fileType = null)
+            : base(ValidBundleWithExtension)
         {
+            Bundle = bundle;
+            FileType = fileType;
             SetupGetFromManifest();
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GetBundlePathFixture"/> class.
-        /// </summary>
-        public GetBundlePathFixture()
-            : this(ExistingBundle)
-        {
-        }
+        private string Bundle { get; }
+
+        private FileType? FileType { get; }
+
+        private string BundleWithCssExtension => $"{Bundle}.css";
+
+        private string BundleWithJsExtension => $"{Bundle}.js";
 
         /// <summary>
-        /// Calls GetBundlePathAsync.
+        /// Calls GetBundlePathAsync with provided parameters.
         /// </summary>
-        /// <returns>The result of the called function.</returns>
+        /// <returns>The result of GetBundlePathAsync.</returns>
         public async Task<string?> GetBundlePathAsync()
         {
-            return await AssetService.GetBundlePathAsync(Bundle).ConfigureAwait(false);
+            return await AssetService
+                .GetBundlePathAsync(Bundle, FileType)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Verify that GetBundlePathAsync is called with an empty string.
+        /// Verify that GetBundlePathAsync was called with an empty string.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyEmpty(string? result)
         {
             result.Should().BeNull();
-            VerifyGetBundlePath();
+            VerifyDependencies();
             VerifyNoOtherCalls();
         }
 
         /// <summary>
-        /// Verify that GetBundlePathAsync is called with a non existing bundle.
+        /// Verify that GetBundlePathAsync was called with an invalid bundle.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyNonExisting(string? result)
         {
             result.Should().BeNull();
-            VerifyGetBundlePath();
-            VerifyGetFromManifest(Bundle);
+            VerifyDependencies();
+            VerifyGetFromManifest();
             VerifyNoOtherCalls();
         }
 
         /// <summary>
-        /// Verify that GetBundlePathAsync is called with an existing bundle.
+        /// Verify that GetBundlePathAsync was called with a valid bundle.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyExisting(string? result)
         {
-            result.Should().NotBeNull();
-            result.Should().Be(ExistingResultBundlePath);
-            VerifyGetBundlePath();
-            VerifyGetFromManifest(Bundle);
+            result.Should().NotBeNull()
+                .And.Be(ValidBundleResultPath);
+            VerifyDependencies();
+            VerifyGetFromManifest();
             VerifyNoOtherCalls();
         }
 
-        private void VerifyGetBundlePath()
+        private void VerifyGetFromManifest()
         {
-            AssetServiceMock.Verify(x => x.GetBundlePathAsync(Bundle));
+            switch (FileType)
+            {
+                case AssetHelpers.FileType.CSS:
+                    VerifyGetFromManifest(BundleWithCssExtension);
+                    break;
+                case AssetHelpers.FileType.JS:
+                    VerifyGetFromManifest(BundleWithJsExtension);
+                    break;
+                case null:
+                    VerifyGetFromManifest(Bundle);
+                    break;
+                default:
+                    throw new InvalidEnumArgumentException(nameof(FileType), (int)FileType, typeof(FileType));
+            }
         }
     }
 }

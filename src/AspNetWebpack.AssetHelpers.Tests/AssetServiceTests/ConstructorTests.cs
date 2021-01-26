@@ -4,53 +4,58 @@
 // </copyright>
 
 using System;
-using AspNetWebpack.AssetHelpers.Testing;
 using FluentAssertions;
+using Moq;
 using Xunit;
 
 namespace AspNetWebpack.AssetHelpers.Tests.AssetServiceTests
 {
-    public sealed class ConstructorTests : IDisposable
+    public sealed class ConstructorTests
     {
-        private ConstructorFixture? _fixture;
-
-        public void Dispose()
+        [Fact]
+        public void Constructor_SharedSettingsNull_ShouldThrowArgumentNullException()
         {
-            _fixture?.Dispose();
+            // Arrange
+            var manifestServiceMock = new Mock<IManifestService>();
+            var tagBuilderMock = new Mock<ITagBuilder>();
+
+            // Act
+            Action act = () => _ = new AssetService(null!, manifestServiceMock.Object, tagBuilderMock.Object);
+
+            // Assert
+            act.Should().ThrowExactly<ArgumentNullException>();
+            manifestServiceMock.VerifyNoOtherCalls();
+            tagBuilderMock.VerifyNoOtherCalls();
         }
 
         [Fact]
-        public void Constructor_Development_ShouldSetAllVariables()
+        public void Constructor_Default_ShouldSetAllVariables()
         {
             // Arrange
-            _fixture = new ConstructorFixture("Development");
+            const string assetsDirectoryPath = "SomeDirectoryPath";
+            const string assetsWebPath = "SomeWebPath";
+
+            var sharedSettingsMock = new Mock<ISharedSettings>();
+
+            sharedSettingsMock
+                .SetupGet(x => x.AssetsDirectoryPath)
+                .Returns(assetsDirectoryPath);
+
+            sharedSettingsMock
+                .SetupGet(x => x.AssetsWebPath)
+                .Returns(assetsWebPath);
+
+            var manifestServiceMock = new Mock<IManifestService>();
+            var tagBuilderMock = new Mock<ITagBuilder>();
 
             // Act
-            var result = _fixture.Construct();
+            var result = new AssetService(sharedSettingsMock.Object, manifestServiceMock.Object, tagBuilderMock.Object);
 
             // Assert
-            result.DevelopmentMode.Should().BeTrue();
-            result.HttpClient.Should().NotBeNull();
-            result.AssetBaseFilePath.Should().Be($"{_fixture.WebpackOptions.InternalDevServer}{_fixture.WebpackOptions.AssetsPublicPath}");
-            result.ManifestPath.Should().Be($"{result.AssetBaseFilePath}{_fixture.WebpackOptions.ManifestFile}");
-            result.AssetPath.Should().Be($"{_fixture.WebpackOptions.PublicDevServer}{_fixture.WebpackOptions.AssetsPublicPath}");
-        }
-
-        [Fact]
-        public void Constructor_Production_ShouldSetAllVariables()
-        {
-            // Arrange
-            _fixture = new ConstructorFixture("Production");
-
-            // Act
-            var result = _fixture.Construct();
-
-            // Assert
-            result.DevelopmentMode.Should().BeFalse();
-            result.HttpClient.Should().BeNull();
-            result.AssetBaseFilePath.Should().Be($"{_fixture.WebHostEnvironment.WebRootPath}{_fixture.WebpackOptions.AssetsPublicPath}");
-            result.ManifestPath.Should().Be($"{result.AssetBaseFilePath}{_fixture.WebpackOptions.ManifestFile}");
-            result.AssetPath.Should().Be(_fixture.WebpackOptions.AssetsPublicPath);
+            result.AssetsDirectoryPath.Should().Be(assetsDirectoryPath);
+            result.AssetsWebPath.Should().Be(assetsWebPath);
+            manifestServiceMock.VerifyNoOtherCalls();
+            tagBuilderMock.VerifyNoOtherCalls();
         }
     }
 }

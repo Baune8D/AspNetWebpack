@@ -3,6 +3,7 @@
 // Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 // </copyright>
 
+using System;
 using AspNetWebpack.AssetHelpers.Testing;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -12,6 +13,16 @@ namespace AspNetWebpack.AssetHelpers.Tests
 {
     public class HtmlHelperExtensionsTests
     {
+        [Fact]
+        public void GetBundleName_Null_ShouldThrowArgumentNullException()
+        {
+            // Act
+            Action act = () => ((IHtmlHelper)null!).GetBundleName();
+
+            // Assert
+            act.Should().ThrowExactly<ArgumentNullException>();
+        }
+
         [Fact]
         public void GetBundleName_MvcView_ShouldReturnBundleName()
         {

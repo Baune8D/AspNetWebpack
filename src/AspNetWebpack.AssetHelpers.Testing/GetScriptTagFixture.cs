@@ -3,22 +3,30 @@
 // Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 // </copyright>
 
-using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Html;
 using Moq;
-using Moq.Protected;
 
 namespace AspNetWebpack.AssetHelpers.Testing
 {
     /// <summary>
-    /// Fixture for testing GetScriptTagAsync in AssetService.
+    /// Fixture for testing GetScriptTagAsync function in AssetService.
     /// </summary>
-    public class GetScriptTagFixture : AssetServiceFixture
+    public class GetScriptTagFixture : AssetServiceBaseFixture
     {
-        private const string ExistingBundle = "ExistingBundle.js";
-        private const string FallbackBundle = "FallbackBundle.js";
+        /// <summary>
+        /// Valid bundle name with extension.
+        /// </summary>
+        public static readonly string ValidBundleWithExtension = $"{ValidBundleWithoutExtension}.js";
+
+        /// <summary>
+        /// Valid fallback bundle name with extension.
+        /// </summary>
+        public static readonly string ValidFallbackBundleWithExtension = $"{ValidFallbackBundleWithoutExtension}.js";
+
+        private const string ScriptTag = "<script src=\"Bundle.js\"></script>";
+        private const string FallbackScriptTag = "<script src=\"FallbackBundle.js\"></script>";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GetScriptTagFixture"/> class.
@@ -26,21 +34,25 @@ namespace AspNetWebpack.AssetHelpers.Testing
         /// <param name="bundle">The bundle name to test against.</param>
         /// <param name="scriptLoad">The script load mode.</param>
         public GetScriptTagFixture(string bundle, ScriptLoad scriptLoad = ScriptLoad.Normal)
-            : base(bundle, ExistingBundle, FallbackBundle)
+            : base(ValidBundleWithExtension, ValidFallbackBundleWithExtension)
         {
+            Bundle = bundle;
             ScriptLoad = scriptLoad;
             SetupGetFromManifest();
-            SetupBuildScriptTag(ExistingResultBundle, ExistingResultBundlePath);
-            SetupBuildScriptTag(FallbackResultBundle, FallbackResultBundlePath);
+            SetupBuildScriptTag(ValidBundleResult, ScriptTag);
+            SetupBuildScriptTag(ValidFallbackBundleResult, FallbackScriptTag);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GetScriptTagFixture"/> class.
         /// </summary>
+        /// <param name="bundle">The bundle name to test against.</param>
+        /// <param name="fallbackBundle">The fallback bundle name to test against.</param>
         /// <param name="scriptLoad">The script load mode.</param>
-        public GetScriptTagFixture(ScriptLoad scriptLoad = ScriptLoad.Normal)
-            : this(ExistingBundle, scriptLoad)
+        public GetScriptTagFixture(string bundle, string fallbackBundle, ScriptLoad scriptLoad = ScriptLoad.Normal)
+            : this(bundle, scriptLoad)
         {
+            FallbackBundle = fallbackBundle;
         }
 
         /// <summary>
@@ -48,107 +60,111 @@ namespace AspNetWebpack.AssetHelpers.Testing
         /// </summary>
         public ScriptLoad ScriptLoad { get; }
 
+        private string Bundle { get; }
+
+        private string? FallbackBundle { get; }
+
         /// <summary>
-        /// Calls GetScriptTagAsync.
+        /// Calls GetScriptTagAsync with provided parameters.
         /// </summary>
         /// <returns>The result of the called function.</returns>
         public async Task<HtmlString> GetScriptTagAsync()
         {
-            return await AssetService.GetScriptTagAsync(Bundle, ScriptLoad).ConfigureAwait(false);
+            if (FallbackBundle == null)
+            {
+                return await AssetService
+                    .GetScriptTagAsync(Bundle, ScriptLoad)
+                    .ConfigureAwait(false);
+            }
+
+            return await AssetService
+                .GetScriptTagAsync(Bundle, FallbackBundle, ScriptLoad)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Calls GetScriptTagAsync with a fallback bundle.
-        /// </summary>
-        /// <returns>The result of the called function.</returns>
-        public async Task<HtmlString> GetScriptTagFallbackAsync()
-        {
-            return await AssetService.GetScriptTagAsync(Bundle, FallbackBundle, ScriptLoad).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Verify that GetScriptTagAsync is called with an empty string.
+        /// Verify that GetScriptTagAsync was called with an empty string.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyEmpty(HtmlString result)
         {
             result.Should().Be(HtmlString.Empty);
-            VerifyGetScriptTag(Bundle);
+            VerifyDependencies();
             VerifyNoOtherCalls();
         }
 
         /// <summary>
-        /// Verify that GetScriptTagAsync is called with a non existing bundle.
+        /// Verify that GetScriptTagAsync was called with an invalid bundle.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyNonExisting(HtmlString result)
         {
             result.Should().Be(HtmlString.Empty);
-            VerifyGetScriptTag(Bundle);
-            VerifyGetFromManifest(Bundle);
+            VerifyDependencies();
+            VerifyGetFromManifest(Bundle, FallbackBundle, ".js");
             VerifyNoOtherCalls();
         }
 
         /// <summary>
-        /// Verify that GetScriptTagAsync is called with an existing bundle.
+        /// Verify that GetScriptTagAsync is called with a valid bundle.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyExisting(HtmlString result)
         {
-            result.ShouldBeScriptTag(ExistingResultBundlePath, ScriptLoad);
-            VerifyGetScriptTag(Bundle);
-            VerifyGetFromManifest(Bundle);
-            VerifyBuildScriptTag(ExistingResultBundle);
+            result.Should().BeEquivalentTo(new HtmlString(ScriptTag));
+            VerifyDependencies();
+            VerifyGetFromManifest(Bundle, FallbackBundle, ".js");
+            VerifyBuildScriptTag(ValidBundleResult);
             VerifyNoOtherCalls();
         }
 
         /// <summary>
-        /// Verify that GetScriptTagAsync is called with a non existing bundle and uses the fallback bundle.
+        /// Verify that GetScriptTagAsync is called with an empty string as fallback.
         /// </summary>
         /// <param name="result">The result to assert.</param>
-        public void VerifyFallback(HtmlString result)
+        public void VerifyFallbackEmpty(HtmlString result)
         {
-            result.ShouldBeScriptTag(FallbackResultBundlePath, ScriptLoad);
-            VerifyGetScriptTagFallback(Bundle, FallbackBundle);
-            VerifyGetFromManifest(Bundle);
-            VerifyGetFromManifest(FallbackBundle);
-            VerifyBuildScriptTag(FallbackResultBundle);
+            result.Should().Be(HtmlString.Empty);
+            VerifyDependencies();
+            VerifyGetFromManifest(Bundle, FallbackBundle, ".js");
             VerifyNoOtherCalls();
         }
 
-        private void VerifyGetScriptTag(string bundle)
+        /// <summary>
+        /// Verify that GetScriptTagAsync is called with an invalid bundle and an invalid fallback bundle.
+        /// </summary>
+        /// <param name="result">The result to assert.</param>
+        public void VerifyFallbackNonExisting(HtmlString result)
         {
-            AssetServiceMock.Verify(x => x.GetScriptTagAsync(bundle, ScriptLoad));
-            VerifyGetScriptTagFallback(bundle, null);
+            result.Should().Be(HtmlString.Empty);
+            VerifyDependencies();
+            VerifyGetFromManifest(Bundle, FallbackBundle, ".js");
+            VerifyNoOtherCalls();
         }
 
-        private void VerifyGetScriptTagFallback(string bundle, string? fallbackBundle)
+        /// <summary>
+        /// Verify that GetScriptTagAsync is called with an invalid bundle and a valid fallback bundle.
+        /// </summary>
+        /// <param name="result">The result to assert.</param>
+        public void VerifyFallbackExisting(HtmlString result)
         {
-            AssetServiceMock.Verify(x => x.GetScriptTagAsync(bundle, fallbackBundle, ScriptLoad));
+            result.Should().BeEquivalentTo(new HtmlString(FallbackScriptTag));
+            VerifyDependencies();
+            VerifyGetFromManifest(Bundle, FallbackBundle, ".js");
+            VerifyBuildScriptTag(ValidFallbackBundleResult);
+            VerifyNoOtherCalls();
         }
 
-        private void SetupBuildScriptTag(string resultBundle, string resultBundlePath)
+        private void SetupBuildScriptTag(string resultBundle, string returnValue)
         {
-            string result = ScriptLoad switch
-            {
-                ScriptLoad.Normal => $"<script src=\"{resultBundlePath}\"></script>",
-                ScriptLoad.Async => $"<script src=\"{resultBundlePath}\" async></script>",
-                ScriptLoad.Defer => $"<script src=\"{resultBundlePath}\" defer></script>",
-                ScriptLoad.AsyncDefer => $"<script src=\"{resultBundlePath}\" async defer></script>",
-                _ => throw new ArgumentException($"{nameof(ScriptLoad)} is invalid!"),
-            };
-
-            AssetServiceMock
-                .Protected()
-                .Setup<string>("BuildScriptTag", resultBundle, ScriptLoad)
-                .Returns(result);
+            TagBuilderMock
+                .Setup(x => x.BuildScriptTag(resultBundle, ScriptLoad))
+                .Returns(returnValue);
         }
 
         private void VerifyBuildScriptTag(string resultBundle)
         {
-            AssetServiceMock
-                .Protected()
-                .Verify("BuildScriptTag", Times.Once(), resultBundle, ScriptLoad);
+            TagBuilderMock.Verify(x => x.BuildScriptTag(resultBundle, ScriptLoad), Times.Once());
         }
     }
 }

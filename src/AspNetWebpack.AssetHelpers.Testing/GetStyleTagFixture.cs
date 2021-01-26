@@ -7,124 +7,140 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Html;
 using Moq;
-using Moq.Protected;
 
 namespace AspNetWebpack.AssetHelpers.Testing
 {
     /// <summary>
-    /// Fixture for testing GetStyleTagAsync in AssetService.
+    /// Fixture for testing GetStyleTagAsync function in AssetService.
     /// </summary>
-    public class GetStyleTagFixture : AssetServiceFixture
+    public class GetStyleTagFixture : AssetServiceBaseFixture
     {
-        private const string ExistingBundle = "ExistingBundle.css";
-        private const string FallbackBundle = "FallbackBundle.css";
+        /// <summary>
+        /// Valid bundle name with extension.
+        /// </summary>
+        public static readonly string ValidBundleWithExtension = $"{ValidBundleWithoutExtension}.css";
+
+        /// <summary>
+        /// Valid fallback bundle name with extension.
+        /// </summary>
+        public static readonly string ValidFallbackBundleWithExtension = $"{ValidFallbackBundleWithoutExtension}.css";
+
+        private const string StyleTag = "<style>Some Content</script>";
+        private const string FallbackStyleTag = "<style>Some Fallback Content</style>";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GetStyleTagFixture"/> class.
         /// </summary>
-        /// <param name="bundle">The bundle name to test against.</param>
-        public GetStyleTagFixture(string bundle)
-            : base(bundle, ExistingBundle, FallbackBundle)
+        /// <param name="bundle">The bundle name param to be used in GetStyleTagAsync.</param>
+        /// <param name="fallbackBundle">The fallback bundle name param to be used in GetStyleTagAsync.</param>
+        public GetStyleTagFixture(string bundle, string? fallbackBundle = null)
+            : base(ValidBundleWithExtension, ValidFallbackBundleWithExtension)
         {
+            Bundle = bundle;
+            FallbackBundle = fallbackBundle;
             SetupGetFromManifest();
-            SetupBuildStyleTag(ExistingResultBundle);
-            SetupBuildStyleTag(FallbackResultBundle);
+            SetupBuildStyleTag(ValidBundleResult, StyleTag);
+            SetupBuildStyleTag(ValidFallbackBundleResult, FallbackStyleTag);
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GetStyleTagFixture"/> class.
-        /// </summary>
-        public GetStyleTagFixture()
-            : this(ExistingBundle)
-        {
-        }
+        private string Bundle { get; }
+
+        private string? FallbackBundle { get; }
 
         /// <summary>
-        /// Calls GetStyleTagAsync.
+        /// Calls GetStyleTagAsync with provided parameters.
         /// </summary>
         /// <returns>The result of the called function.</returns>
         public async Task<HtmlString> GetStyleTagAsync()
         {
-            return await AssetService.GetStyleTagAsync(Bundle).ConfigureAwait(false);
+            return await AssetService
+                .GetStyleTagAsync(Bundle, FallbackBundle)
+                .ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Calls GetStyleTagAsync with a fallback bundle.
-        /// </summary>
-        /// <returns>The result of the called function.</returns>
-        public async Task<HtmlString> GetStyleTagFallbackAsync()
-        {
-            return await AssetService.GetStyleTagAsync(Bundle, FallbackBundle).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Verify that GetStyleTagAsync is called with an empty string.
+        /// Verify that GetStyleTagAsync was called with an empty string.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyEmpty(HtmlString result)
         {
             result.Should().Be(HtmlString.Empty);
-            VerifyGetStyleTag(Bundle, null);
+            VerifyDependencies();
             VerifyNoOtherCalls();
         }
 
         /// <summary>
-        /// Verify that GetStyleTagAsync is called with a non existing bundle.
+        /// Verify that GetStyleTagAsync was called with an invalid bundle.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyNonExisting(HtmlString result)
         {
             result.Should().Be(HtmlString.Empty);
-            VerifyGetStyleTag(Bundle, null);
-            VerifyGetFromManifest(Bundle);
+            VerifyDependencies();
+            VerifyGetFromManifest(Bundle, FallbackBundle, ".css");
             VerifyNoOtherCalls();
         }
 
         /// <summary>
-        /// Verify that GetStyleTagAsync is called with an existing bundle.
+        /// Verify that GetStyleTagAsync was called with a valid bundle.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyExisting(HtmlString result)
         {
-            result.ShouldBeStyleTag();
-            VerifyGetStyleTag(Bundle, null);
-            VerifyGetFromManifest(Bundle);
-            VerifyBuildStyleTag(ExistingResultBundle);
+            result.Should().BeEquivalentTo(new HtmlString(StyleTag));
+            VerifyDependencies();
+            VerifyGetFromManifest(Bundle, FallbackBundle, ".css");
+            VerifyBuildStyleTag(ValidBundleResult);
             VerifyNoOtherCalls();
         }
 
         /// <summary>
-        /// Verify that GetStyleTagAsync is called with a non existing bundle and uses the fallback bundle.
+        /// Verify that GetStyleTagAsync was called with an empty string as fallback.
         /// </summary>
         /// <param name="result">The result to assert.</param>
-        public void VerifyFallback(HtmlString result)
+        public void VerifyFallbackEmpty(HtmlString result)
         {
-            result.ShouldBeStyleTag();
-            VerifyGetStyleTag(Bundle, FallbackBundle);
-            VerifyGetFromManifest(Bundle);
-            VerifyGetFromManifest(FallbackBundle);
-            VerifyBuildStyleTag(FallbackResultBundle);
+            result.Should().Be(HtmlString.Empty);
+            VerifyDependencies();
+            VerifyGetFromManifest(Bundle, FallbackBundle, ".css");
             VerifyNoOtherCalls();
         }
 
-        private void VerifyGetStyleTag(string bundle, string? fallbackBundle)
+        /// <summary>
+        /// Verify that GetStyleTagAsync was called with an invalid bundle and an invalid fallback bundle.
+        /// </summary>
+        /// <param name="result">The result to assert.</param>
+        public void VerifyFallbackNonExisting(HtmlString result)
         {
-            AssetServiceMock.Verify(x => x.GetStyleTagAsync(bundle, fallbackBundle));
+            result.Should().Be(HtmlString.Empty);
+            VerifyDependencies();
+            VerifyGetFromManifest(Bundle, FallbackBundle, ".css");
+            VerifyNoOtherCalls();
         }
 
-        private void SetupBuildStyleTag(string resultBundle)
+        /// <summary>
+        /// Verify that GetStyleTagAsync was called with an invalid bundle and a valid fallback bundle.
+        /// </summary>
+        /// <param name="result">The result to assert.</param>
+        public void VerifyFallbackExisting(HtmlString result)
         {
-            AssetServiceMock
-                .Protected()
-                .Setup<Task<string>>("BuildStyleTagAsync", resultBundle)
-                .ReturnsAsync("<style>Test</style>");
+            result.Should().BeEquivalentTo(new HtmlString(FallbackStyleTag));
+            VerifyDependencies();
+            VerifyGetFromManifest(Bundle, FallbackBundle, ".css");
+            VerifyBuildStyleTag(ValidFallbackBundleResult);
+            VerifyNoOtherCalls();
+        }
+
+        private void SetupBuildStyleTag(string resultBundle, string returnValue)
+        {
+            TagBuilderMock
+                .Setup(x => x.BuildStyleTagAsync(resultBundle))
+                .ReturnsAsync(returnValue);
         }
 
         private void VerifyBuildStyleTag(string resultBundle)
         {
-            AssetServiceMock
-                .Protected()
-                .Verify("BuildStyleTagAsync", Times.Once(), resultBundle);
+            TagBuilderMock.Verify(x => x.BuildStyleTagAsync(resultBundle), Times.Once());
         }
     }
 }

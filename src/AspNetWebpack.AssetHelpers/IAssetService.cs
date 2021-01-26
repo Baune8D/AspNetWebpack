@@ -14,16 +14,22 @@ namespace AspNetWebpack.AssetHelpers
     public interface IAssetService
     {
         /// <summary>
+        /// Gets full directory path for assets.
+        /// </summary>
+        string AssetsDirectoryPath { get; }
+
+        /// <summary>
         /// Gets web path for UI assets.
         /// </summary>
-        string AssetPath { get; }
+        string AssetsWebPath { get; }
 
         /// <summary>
         /// Gets the full file path.
         /// </summary>
         /// <param name="bundle">The bundle filename.</param>
+        /// <param name="fileType">The bundle file type, will append extension to bundle if specified.</param>
         /// <returns>The full file path.</returns>
-        Task<string?> GetBundlePathAsync(string bundle);
+        Task<string?> GetBundlePathAsync(string bundle, FileType? fileType = null);
 
         /// <summary>
         /// Gets a html script tag for the specified asset.
