@@ -9,10 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageDownload Include="ReportGenerator" Version="[4.7.1]" />
-    <PackageReference Include="Nuke.Common" Version="5.0.2" />
-    <PackageDownload Include="coverlet.console" Version="[1.7.2]" />
-    <PackageDownload Include="GitVersion.Tool" Version="[5.5.1]" />
+    <PackageDownload Include="ReportGenerator" Version="[4.8.8]" />
+    <PackageReference Include="Nuke.Common" Version="5.1.1" />
+    <PackageDownload Include="coverlet.console" Version="[3.0.3]" />
+    <PackageDownload Include="GitVersion.Tool" Version="[5.6.9]" />
   </ItemGroup>
 
 </Project>
