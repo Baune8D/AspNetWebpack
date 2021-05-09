@@ -38,7 +38,7 @@ namespace AspNetWebpack.AssetHelpers
             }
 
             serviceCollection.Configure<WebpackOptions>(configuration.GetSection("Webpack"));
-            serviceCollection.TryAddScoped<IFileSystem, FileSystem>();
+            serviceCollection.TryAddTransient<IFileSystem, FileSystem>();
             serviceCollection.AddSingleton<ISharedSettings, SharedSettings>();
             serviceCollection.AddSingleton<ITagBuilder, TagBuilder>();
             serviceCollection.AddSingleton<IManifestService, ManifestService>();
