@@ -41,27 +41,4 @@
     </Otherwise>
   </Choose>
 
-  <Choose>
-    <When Condition="'$(IsTestProject)' == 'true'">
-      <PropertyGroup>
-        <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)rulesets/tests.ruleset</CodeAnalysisRuleSet>
-      </PropertyGroup>
-    </When>
-    <When Condition="'$(IsTestingProject)' == 'true'">
-      <PropertyGroup>
-        <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)rulesets/testing.ruleset</CodeAnalysisRuleSet>
-      </PropertyGroup>
-    </When>
-    <When Condition="'$(IsBuildProject)' == 'true'">
-      <PropertyGroup>
-        <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)rulesets/build.ruleset</CodeAnalysisRuleSet>
-      </PropertyGroup>
-    </When>
-    <Otherwise>
-      <PropertyGroup>
-        <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)rulesets/shared.ruleset</CodeAnalysisRuleSet>
-      </PropertyGroup>
-    </Otherwise>
-  </Choose>
-
 </Project>
