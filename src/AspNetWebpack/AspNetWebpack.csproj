@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Description>Asset utilities for AspNetWebpack</Description>
+    <Authors>Morten Larsen</Authors>
+    <PackageProjectUrl>https://github.com/Baune8D/AspNetWebpack</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Baune8D/AspNetWebpack</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>ASP.NET, Webpack</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Abstractions" Version="13.2.31" />
+  </ItemGroup>
+
+</Project>

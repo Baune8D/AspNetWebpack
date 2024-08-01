@@ -1,7 +1,7 @@
-# AspNetWebpack.AssetHelpers
-[![Build status](https://ci.appveyor.com/api/projects/status/u369u4wt45hsw53f?svg=true)](https://ci.appveyor.com/project/Baune8D/aspnetwebpack-assethelpers)
-[![codecov](https://codecov.io/gh/Baune8D/AspNetWebpack.AssetHelpers/branch/main/graph/badge.svg?token=M4KiXgJBnw)](https://codecov.io/gh/Baune8D/AspNetWebpack.AssetHelpers)
-[![NuGet Badge](https://buildstats.info/nuget/AspNetWebpack.AssetHelpers)](https://www.nuget.org/packages/AspNetWebpack.AssetHelpers)
+# AspNetWebpack
+[![Build status](https://ci.appveyor.com/api/projects/status/u369u4wt45hsw53f?svg=true)](https://ci.appveyor.com/project/Baune8D/aspnetwebpack)
+[![codecov](https://codecov.io/gh/Baune8D/AspNetWebpack/branch/main/graph/badge.svg?token=M4KiXgJBnw)](https://codecov.io/gh/Baune8D/AspNetWebpack)
+[![NuGet Badge](https://buildstats.info/nuget/AspNetWebpack)](https://www.nuget.org/packages/AspNetWebpack)
 
 Asset utilities for [AspNetWebpack](https://github.com/Baune8D/AspNetWebpack)
 
@@ -63,7 +63,7 @@ A fallback bundle can be set on: ```GetScriptTagAsync```, ```GetLinkTagAsync```,
 ## Example _Layout.cshtml
 
 ```razor
-@using AspNetWebpack.AssetHelpers
+@using AspNetWebpack
 
 @inject IAssetService AssetService
 

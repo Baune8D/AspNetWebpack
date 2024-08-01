@@ -104,7 +104,7 @@ class Build : NukeBuild
                     .SetAssembly(assembly)
                     .SetOutput(CoverageDirectory / "coverage")
                     .SetFormat(CoverletOutputFormat.opencover)
-                    .AddExclude("[AspNetWebpack.AssetHelpers.Testing]*"));
+                    .AddExclude("[AspNetWebpack.Testing]*"));
 
                 ReportGeneratorTasks.ReportGenerator(s => s
                     .SetFramework("netcoreapp3.0")
