@@ -22,15 +22,8 @@ namespace AspNetWebpack
         /// <param name="webHostEnvironment">Web host environment.</param>
         public SharedSettings(IOptions<WebpackOptions> options, IWebHostEnvironment webHostEnvironment)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            if (webHostEnvironment == null)
-            {
-                throw new ArgumentNullException(nameof(webHostEnvironment));
-            }
+            ArgumentNullException.ThrowIfNull(options);
+            ArgumentNullException.ThrowIfNull(webHostEnvironment);
 
             DevelopmentMode = webHostEnvironment.IsDevelopment();
 

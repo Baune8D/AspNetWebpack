@@ -21,17 +21,14 @@ namespace AspNetWebpack
         /// <returns>The name of the Webpack bundle.</returns>
         public static string? GetBundleName(this ViewDataDictionary viewData)
         {
-            if (viewData == null)
-            {
-                throw new ArgumentNullException(nameof(viewData));
-            }
+            ArgumentNullException.ThrowIfNull(viewData);
 
-            if (!viewData.ContainsKey("Bundle") || !(viewData["Bundle"] is string))
+            if (!viewData.ContainsKey("Bundle") || viewData["Bundle"] is not string)
             {
                 return null;
             }
 
-            var bundle = (string)viewData["Bundle"];
+            var bundle = (string)viewData["Bundle"]!;
             if (!bundle.StartsWith('/'))
             {
                 return bundle;

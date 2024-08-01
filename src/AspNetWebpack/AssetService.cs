@@ -27,10 +27,7 @@ namespace AspNetWebpack
         /// <param name="tagBuilder">Asset builder service.</param>
         public AssetService(ISharedSettings sharedSettings, IManifestService manifestService, ITagBuilder tagBuilder)
         {
-            if (sharedSettings == null)
-            {
-                throw new ArgumentNullException(nameof(sharedSettings));
-            }
+            ArgumentNullException.ThrowIfNull(sharedSettings);
 
             AssetsDirectoryPath = sharedSettings.AssetsDirectoryPath;
             AssetsWebPath = sharedSettings.AssetsWebPath;

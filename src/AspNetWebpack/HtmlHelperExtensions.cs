@@ -21,10 +21,7 @@ namespace AspNetWebpack
         /// <returns>The bundle name.</returns>
         public static string GetBundleName(this IHtmlHelper html)
         {
-            if (html == null)
-            {
-                throw new ArgumentNullException(nameof(html));
-            }
+            ArgumentNullException.ThrowIfNull(html);
 
             var path = html.ViewContext.View.Path;
             var viewPaths = path

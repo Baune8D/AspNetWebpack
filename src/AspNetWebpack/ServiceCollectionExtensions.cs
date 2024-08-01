@@ -27,10 +27,7 @@ namespace AspNetWebpack
         /// <returns>The modified service collection.</returns>
         public static IServiceCollection AddAssetHelpers(this IServiceCollection serviceCollection, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
+            ArgumentNullException.ThrowIfNull(configuration);
 
             if (webHostEnvironment.IsDevelopment())
             {

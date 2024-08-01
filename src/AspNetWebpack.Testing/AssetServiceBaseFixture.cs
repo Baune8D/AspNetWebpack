@@ -109,10 +109,7 @@ namespace AspNetWebpack.Testing
         /// <param name="extension">The extension to use.</param>
         protected void VerifyGetFromManifest(string bundle, string? fallbackBundle, string extension)
         {
-            if (bundle == null)
-            {
-                throw new ArgumentNullException(nameof(bundle));
-            }
+            ArgumentNullException.ThrowIfNull(bundle);
 
             var bundleIsValid =
                 bundle == ValidBundleWithoutExtension ||

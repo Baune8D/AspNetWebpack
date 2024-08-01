@@ -107,14 +107,11 @@ namespace AspNetWebpack
         /// <returns>A string containing the link/style tag.</returns>
         public async Task<string> BuildStyleTagAsync(string file)
         {
-            if (file == null)
-            {
-                throw new ArgumentNullException(nameof(file));
-            }
+            ArgumentNullException.ThrowIfNull(file);
 
-            if (!_sharedSettings.DevelopmentMode && _inlineStyles.ContainsKey(file))
+            if (!_sharedSettings.DevelopmentMode && _inlineStyles.TryGetValue(file, out var cached))
             {
-                return _inlineStyles[file];
+                return cached;
             }
 
             var filename = file;
