@@ -14,7 +14,7 @@ public IWebHostEnvironment Env { get; }
 public void ConfigureServices(IServiceCollection services)
 {
     ...
-    services.AddAssetHelpers(Configuration, Env);
+    services.AddAspNetWebpack(Configuration, Env);
 }
 ```
 

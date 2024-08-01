@@ -25,7 +25,7 @@ namespace AspNetWebpack
         /// <param name="configuration">The configuration.</param>
         /// <param name="webHostEnvironment">The hosting environment.</param>
         /// <returns>The modified service collection.</returns>
-        public static IServiceCollection AddAssetHelpers(this IServiceCollection serviceCollection, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
+        public static IServiceCollection AddAspNetWebpack(this IServiceCollection serviceCollection, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
             ArgumentNullException.ThrowIfNull(configuration);
 

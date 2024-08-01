@@ -35,27 +35,27 @@ namespace AspNetWebpack.Tests
         }
 
         [Fact]
-        public void AddAssetHelpers_ConfigurationNull_ShouldThrowArgumentNullException()
+        public void AddAspNetWebpack_ConfigurationNull_ShouldThrowArgumentNullException()
         {
             // Arrange
             var webHostEnvironment = new Mock<IWebHostEnvironment>().Object;
 
             // Act
-            Action act = () => new ServiceCollection().AddAssetHelpers(null!, webHostEnvironment);
+            Action act = () => new ServiceCollection().AddAspNetWebpack(null!, webHostEnvironment);
 
             // Assert
             act.Should().ThrowExactly<ArgumentNullException>();
         }
 
         [Fact]
-        public void AddAssetHelpers_Development_ShouldResolveServices()
+        public void AddAspNetWebpack_Development_ShouldResolveServices()
         {
             // Arrange
             var webHostEnvironment = CreateWebHostEnvironment("Development");
             _serviceCollection.AddSingleton(webHostEnvironment);
 
             // Act
-            _serviceCollection.AddAssetHelpers(_configuration, webHostEnvironment);
+            _serviceCollection.AddAspNetWebpack(_configuration, webHostEnvironment);
             var provider = _serviceCollection.BuildServiceProvider();
             var httpClientFactory = provider.GetService<IHttpClientFactory>();
             var webpackOptions = provider.GetService<IOptions<WebpackOptions>>();
@@ -69,14 +69,14 @@ namespace AspNetWebpack.Tests
         }
 
         [Fact]
-        public void AddAssetHelpers_Production_ShouldResolveServices()
+        public void AddAspNetWebpack_Production_ShouldResolveServices()
         {
             // Arrange
             var webHostEnvironment = CreateWebHostEnvironment("Production");
             _serviceCollection.AddSingleton(webHostEnvironment);
 
             // Act
-            _serviceCollection.AddAssetHelpers(_configuration, webHostEnvironment);
+            _serviceCollection.AddAspNetWebpack(_configuration, webHostEnvironment);
             var provider = _serviceCollection.BuildServiceProvider();
             var httpClientFactory = provider.GetService<IHttpClientFactory>();
             var webpackOptions = provider.GetService<IOptions<WebpackOptions>>();
