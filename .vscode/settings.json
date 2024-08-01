@@ -1,13 +1,12 @@
 {
   "files.encoding": "utf8",
   "files.exclude": {
+    ".git": true,
     ".vs": true,
-    ".idea": true,
-    ".tmp": true,
     "artifacts": true,
     "coverage": true,
-    "*.user": true,
+    "**/obj": true,
     "**/bin": true,
-    "**/obj": true
+    "tools/*": true
   }
 }
