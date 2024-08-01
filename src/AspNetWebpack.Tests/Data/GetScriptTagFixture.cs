@@ -8,7 +8,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Html;
 using Moq;
 
-namespace AspNetWebpack.Testing
+namespace AspNetWebpack.Tests.Data
 {
     /// <summary>
     /// Fixture for testing GetScriptTagAsync function in AssetService.

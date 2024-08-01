@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AspNetWebpack.Testing
+namespace AspNetWebpack.Tests.Data
 {
     /// <inheritdoc />
     public class HttpMessageHandlerStub : HttpMessageHandler

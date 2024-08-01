@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 
-namespace AspNetWebpack.Testing
+namespace AspNetWebpack.Tests.Data
 {
     /// <summary>
     /// Stub class for testing view path.

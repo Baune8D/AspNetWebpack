@@ -5,7 +5,7 @@
 
 using System;
 using System.Threading.Tasks;
-using AspNetWebpack.Testing;
+using AspNetWebpack.Tests.Data;
 using FluentAssertions;
 using Xunit;
 

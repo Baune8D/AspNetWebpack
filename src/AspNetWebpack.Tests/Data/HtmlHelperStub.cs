@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace AspNetWebpack.Testing
+namespace AspNetWebpack.Tests.Data
 {
     /// <summary>
     /// Stub class for testing view context.

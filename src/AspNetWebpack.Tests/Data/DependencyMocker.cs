@@ -10,7 +10,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Hosting;
 using Moq;
 
-namespace AspNetWebpack.Testing
+namespace AspNetWebpack.Tests.Data
 {
     /// <summary>
     /// Static functions for mocking common dependencies.

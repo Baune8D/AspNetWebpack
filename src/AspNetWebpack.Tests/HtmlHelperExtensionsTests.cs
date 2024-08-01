@@ -4,7 +4,7 @@
 // </copyright>
 
 using System;
-using AspNetWebpack.Testing;
+using AspNetWebpack.Tests.Data;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Xunit;

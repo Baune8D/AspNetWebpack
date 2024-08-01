@@ -1,20 +1,19 @@
-// <copyright file="GetLinkTagFixture.cs" company="Morten Larsen">
+// <copyright file="GetStyleTagFixture.cs" company="Morten Larsen">
 // Copyright (c) Morten Larsen. All rights reserved.
 // Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 // </copyright>
 
-using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Html;
 using Moq;
 
-namespace AspNetWebpack.Testing
+namespace AspNetWebpack.Tests.Data
 {
     /// <summary>
-    /// Fixture for testing GetLinkTagAsync function in AssetService.
+    /// Fixture for testing GetStyleTagAsync function in AssetService.
     /// </summary>
-    public class GetLinkTagFixture : AssetServiceBaseFixture
+    public class GetStyleTagFixture : AssetServiceBaseFixture
     {
         /// <summary>
         /// Valid bundle name with extension.
@@ -26,22 +25,22 @@ namespace AspNetWebpack.Testing
         /// </summary>
         public static readonly string ValidFallbackBundleWithExtension = $"{ValidFallbackBundleWithoutExtension}.css";
 
-        private const string LinkTag = "<link href=\"Bundle.css\" />";
-        private const string FallbackLinkTag = "<link href=\"FallbackBundle.css\" />";
+        private const string StyleTag = "<style>Some Content</script>";
+        private const string FallbackStyleTag = "<style>Some Fallback Content</style>";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GetLinkTagFixture"/> class.
+        /// Initializes a new instance of the <see cref="GetStyleTagFixture"/> class.
         /// </summary>
-        /// <param name="bundle">The bundle name param to be used in GetLinkTagAsync.</param>
-        /// <param name="fallbackBundle">The fallback bundle name param to be used in GetLinkTagAsync.</param>
-        public GetLinkTagFixture(string bundle, string? fallbackBundle = null)
+        /// <param name="bundle">The bundle name param to be used in GetStyleTagAsync.</param>
+        /// <param name="fallbackBundle">The fallback bundle name param to be used in GetStyleTagAsync.</param>
+        public GetStyleTagFixture(string bundle, string? fallbackBundle = null)
             : base(ValidBundleWithExtension, ValidFallbackBundleWithExtension)
         {
             Bundle = bundle;
             FallbackBundle = fallbackBundle;
             SetupGetFromManifest();
-            SetupBuildLinkTag(ValidBundleResult, LinkTag);
-            SetupBuildLinkTag(ValidFallbackBundleResult, FallbackLinkTag);
+            SetupBuildStyleTag(ValidBundleResult, StyleTag);
+            SetupBuildStyleTag(ValidFallbackBundleResult, FallbackStyleTag);
         }
 
         private string Bundle { get; }
@@ -49,18 +48,18 @@ namespace AspNetWebpack.Testing
         private string? FallbackBundle { get; }
 
         /// <summary>
-        /// Calls GetLinkTagAsync with provided parameters.
+        /// Calls GetStyleTagAsync with provided parameters.
         /// </summary>
         /// <returns>The result of the called function.</returns>
-        public async Task<HtmlString> GetLinkTagAsync()
+        public async Task<HtmlString> GetStyleTagAsync()
         {
             return await AssetService
-                .GetLinkTagAsync(Bundle, FallbackBundle)
+                .GetStyleTagAsync(Bundle, FallbackBundle)
                 .ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Verify that GetLinkTagAsync was called with an empty string.
+        /// Verify that GetStyleTagAsync was called with an empty string.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyEmpty(HtmlString result)
@@ -71,7 +70,7 @@ namespace AspNetWebpack.Testing
         }
 
         /// <summary>
-        /// Verify that GetLinkTagAsync was called with an invalid bundle.
+        /// Verify that GetStyleTagAsync was called with an invalid bundle.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyNonExisting(HtmlString result)
@@ -83,20 +82,20 @@ namespace AspNetWebpack.Testing
         }
 
         /// <summary>
-        /// Verify that GetLinkTagAsync was called with a valid bundle.
+        /// Verify that GetStyleTagAsync was called with a valid bundle.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyExisting(HtmlString result)
         {
-            result.Should().BeEquivalentTo(new HtmlString(LinkTag));
+            result.Should().BeEquivalentTo(new HtmlString(StyleTag));
             VerifyDependencies();
             VerifyGetFromManifest(Bundle, FallbackBundle, ".css");
-            VerifyBuildLinkTag(ValidBundleResult);
+            VerifyBuildStyleTag(ValidBundleResult);
             VerifyNoOtherCalls();
         }
 
         /// <summary>
-        /// Verify that GetLinkTagAsync was called with an empty string as fallback.
+        /// Verify that GetStyleTagAsync was called with an empty string as fallback.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyFallbackEmpty(HtmlString result)
@@ -108,7 +107,7 @@ namespace AspNetWebpack.Testing
         }
 
         /// <summary>
-        /// Verify that GetLinkTagAsync was called with an invalid bundle and an invalid fallback bundle.
+        /// Verify that GetStyleTagAsync was called with an invalid bundle and an invalid fallback bundle.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyFallbackNonExisting(HtmlString result)
@@ -120,28 +119,28 @@ namespace AspNetWebpack.Testing
         }
 
         /// <summary>
-        /// Verify that GetLinkTagAsync was called with an invalid bundle and a valid fallback bundle.
+        /// Verify that GetStyleTagAsync was called with an invalid bundle and a valid fallback bundle.
         /// </summary>
         /// <param name="result">The result to assert.</param>
         public void VerifyFallbackExisting(HtmlString result)
         {
-            result.Should().BeEquivalentTo(new HtmlString(FallbackLinkTag));
+            result.Should().BeEquivalentTo(new HtmlString(FallbackStyleTag));
             VerifyDependencies();
             VerifyGetFromManifest(Bundle, FallbackBundle, ".css");
-            VerifyBuildLinkTag(ValidFallbackBundleResult);
+            VerifyBuildStyleTag(ValidFallbackBundleResult);
             VerifyNoOtherCalls();
         }
 
-        private void SetupBuildLinkTag(string resultBundle, string returnValue)
+        private void SetupBuildStyleTag(string resultBundle, string returnValue)
         {
             TagBuilderMock
-                .Setup(x => x.BuildLinkTag(resultBundle))
-                .Returns(returnValue);
+                .Setup(x => x.BuildStyleTagAsync(resultBundle))
+                .ReturnsAsync(returnValue);
         }
 
-        private void VerifyBuildLinkTag(string resultBundle)
+        private void VerifyBuildStyleTag(string resultBundle)
         {
-            TagBuilderMock.Verify(x => x.BuildLinkTag(resultBundle), Times.Once());
+            TagBuilderMock.Verify(x => x.BuildStyleTagAsync(resultBundle), Times.Once());
         }
     }
 }

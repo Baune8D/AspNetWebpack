@@ -4,7 +4,7 @@
 // </copyright>
 
 using System.Threading.Tasks;
-using AspNetWebpack.Testing;
+using AspNetWebpack.Tests.Data;
 using Xunit;
 
 namespace AspNetWebpack.Tests.AssetServiceTests

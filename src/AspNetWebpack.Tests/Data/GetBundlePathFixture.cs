@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using FluentAssertions;
 
-namespace AspNetWebpack.Testing
+namespace AspNetWebpack.Tests.Data
 {
     /// <summary>
     /// Fixture for testing GetBundlePathAsync function in AssetService.

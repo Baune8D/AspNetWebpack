@@ -6,7 +6,7 @@
 using System;
 using Moq;
 
-namespace AspNetWebpack.Testing
+namespace AspNetWebpack.Tests.Data
 {
     /// <summary>
     /// Base fixture for testing AssetService.
