@@ -3,19 +3,13 @@
 [![codecov](https://codecov.io/gh/Baune8D/AspNetWebpack/branch/main/graph/badge.svg?token=M4KiXgJBnw)](https://codecov.io/gh/Baune8D/AspNetWebpack)
 [![NuGet Badge](https://buildstats.info/nuget/AspNetWebpack)](https://www.nuget.org/packages/AspNetWebpack)
 
-Asset utilities for [AspNetWebpack](https://github.com/Baune8D/AspNetWebpack)
+See template repository for example of usage: [AspNetWebpack-Template](https://github.com/Baune8D/AspNetWebpack-Template)
 
-Initialize AssetService in ```Startup.cs```:
+Initialize AspNetWebpack components in `Program.cs`:
 ```csharp
-public IConfiguration Configuration { get; }
+var builder = WebApplication.CreateBuilder(args);
 
-public IWebHostEnvironment Env { get; }
-
-public void ConfigureServices(IServiceCollection services)
-{
-    ...
-    services.AddAspNetWebpack(Configuration, Env);
-}
+builder.Services.AddAspNetWebpack(builder.Configuration, builder.Environment);
 ```
 
 Use extensions to get the bundle name:
@@ -24,13 +18,13 @@ var bundle = ViewData.GetBundleName() // Gets the bundle name from ViewData["Bun
 var bundle = Html.GetBundleName() // Gets the bundle name from the view context
 ```
 
-Recommended use in eg. ```_Layout.cshtml```:
+Recommended use in eg. `_Layout.cshtml`:
 ```csharp
 var bundle = ViewData.GetBundleName() ?? Html.GetBundleName();
 // Gets the bundle name from the view context but allows overriding it in ViewData["Bundle"]
 ```
 
-Use ```AssetService``` to get assets:
+Use `AssetService` to get assets:
 ```csharp
 @inject IAssetService AssetService
 
@@ -49,11 +43,11 @@ Use ```AssetService``` to get assets:
 @await AssetService.GetStyleTagAsync("SomeBundle")
 // Generates: <style>Inlined CSS</style
 ```
-Overloads exists on ```GetBundlePathAsync``` in case no extension is applied to the bundle name.
+Overloads exists on `GetBundlePathAsync` in case no extension is applied to the bundle name.
 
-Overloads exists on ```GetScriptTagAsync``` to change the load behaviour to eg. ```async``` and/or ```defer```.
+Overloads exists on `GetScriptTagAsync` to change the load behaviour to eg. `async` and/or `defer`.
 
-A fallback bundle can be set on: ```GetScriptTagAsync```, ```GetLinkTagAsync```, ```GetStyleTagAsync```
+A fallback bundle can be set on: `GetScriptTagAsync`, `GetLinkTagAsync`, `GetStyleTagAsync`
 ```csharp
 @await AssetService.GetScriptTagAsync("SomeBundle", "FallbackBundle")
 // Generates: <script src="/Path/To/Assets/SomeBundle.js?v=cache-buster"></script>
@@ -77,14 +71,10 @@ A fallback bundle can be set on: ```GetScriptTagAsync```, ```GetLinkTagAsync```,
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - AspNetWebpack</title>
-    @await RenderSectionAsync("Head", required: false)
-
     @await AssetService.GetLinkTagAsync(bundle, "Layout");
-    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     @RenderBody()
-
     @await AssetService.GetScriptTagAsync(bundle, "Layout", ScriptLoad.Defer);
     @await RenderSectionAsync("Scripts", required: false)
 </body>
