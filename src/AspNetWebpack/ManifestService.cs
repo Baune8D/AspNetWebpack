@@ -10,104 +10,103 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace AspNetWebpack
+namespace AspNetWebpack;
+
+/// <summary>
+/// Service for including Webpack assets in UI projects.
+/// </summary>
+public sealed class ManifestService : IManifestService, IDisposable
 {
+    private readonly ISharedSettings _sharedSettings;
+    private readonly IFileSystem _fileSystem;
+
+    private JsonDocument? _manifest;
+
     /// <summary>
-    /// Service for including Webpack assets in UI projects.
+    /// Initializes a new instance of the <see cref="ManifestService"/> class.
     /// </summary>
-    public sealed class ManifestService : IManifestService, IDisposable
+    /// <param name="sharedSettings">Shared settings.</param>
+    /// <param name="fileSystem">File system.</param>
+    public ManifestService(ISharedSettings sharedSettings, IFileSystem fileSystem)
     {
-        private readonly ISharedSettings _sharedSettings;
-        private readonly IFileSystem _fileSystem;
+        _sharedSettings = sharedSettings;
+        _fileSystem = fileSystem;
+    }
 
-        private JsonDocument? _manifest;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ManifestService"/> class.
-        /// </summary>
-        /// <param name="sharedSettings">Shared settings.</param>
-        /// <param name="fileSystem">File system.</param>
-        public ManifestService(ISharedSettings sharedSettings, IFileSystem fileSystem)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ManifestService"/> class.
+    /// </summary>
+    /// <param name="sharedSettings">Shared settings.</param>
+    /// <param name="fileSystem">File system.</param>
+    /// <param name="httpClientFactory">HttpClient factory.</param>
+    public ManifestService(ISharedSettings sharedSettings, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
+        : this(sharedSettings, fileSystem)
+    {
+        if (_sharedSettings.DevelopmentMode)
         {
-            _sharedSettings = sharedSettings;
-            _fileSystem = fileSystem;
+            HttpClient = httpClientFactory.CreateClient();
         }
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ManifestService"/> class.
-        /// </summary>
-        /// <param name="sharedSettings">Shared settings.</param>
-        /// <param name="fileSystem">File system.</param>
-        /// <param name="httpClientFactory">HttpClient factory.</param>
-        public ManifestService(ISharedSettings sharedSettings, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
-            : this(sharedSettings, fileSystem)
+    private HttpClient? HttpClient { get; }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        _manifest?.Dispose();
+        HttpClient?.Dispose();
+    }
+
+    /// <summary>
+    /// Gets the asset filename from the Webpack manifest.
+    /// </summary>
+    /// <param name="bundle">The name of the Webpack bundle.</param>
+    /// <returns>The asset filename.</returns>
+    public async Task<string?> GetFromManifestAsync(string bundle)
+    {
+        JsonDocument manifest;
+
+        if (_manifest == null)
         {
-            if (_sharedSettings.DevelopmentMode)
+            var json = _sharedSettings.DevelopmentMode
+                ? await FetchDevelopmentManifestAsync(HttpClient, _sharedSettings.ManifestPath).ConfigureAwait(false)
+                : await _fileSystem.File.ReadAllTextAsync(_sharedSettings.ManifestPath).ConfigureAwait(false);
+
+            manifest = JsonDocument.Parse(json);
+            if (!_sharedSettings.DevelopmentMode)
             {
-                HttpClient = httpClientFactory.CreateClient();
-            }
-        }
-
-        private HttpClient? HttpClient { get; }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            _manifest?.Dispose();
-            HttpClient?.Dispose();
-        }
-
-        /// <summary>
-        /// Gets the asset filename from the Webpack manifest.
-        /// </summary>
-        /// <param name="bundle">The name of the Webpack bundle.</param>
-        /// <returns>The asset filename.</returns>
-        public async Task<string?> GetFromManifestAsync(string bundle)
-        {
-            JsonDocument manifest;
-
-            if (_manifest == null)
-            {
-                var json = _sharedSettings.DevelopmentMode
-                    ? await FetchDevelopmentManifestAsync(HttpClient, _sharedSettings.ManifestPath).ConfigureAwait(false)
-                    : await _fileSystem.File.ReadAllTextAsync(_sharedSettings.ManifestPath).ConfigureAwait(false);
-
-                manifest = JsonDocument.Parse(json);
-                if (!_sharedSettings.DevelopmentMode)
-                {
-                    _manifest = manifest;
-                }
-            }
-            else
-            {
-                manifest = _manifest;
-            }
-
-            try
-            {
-                return manifest.RootElement.GetProperty(bundle).GetString();
-            }
-            catch (KeyNotFoundException)
-            {
-                return null;
+                _manifest = manifest;
             }
         }
-
-        private static async Task<string> FetchDevelopmentManifestAsync(HttpClient? httpClient, string manifestPath)
+        else
         {
-            if (httpClient == null)
-            {
-                throw new ArgumentNullException(nameof(httpClient), "HttpClient only available in development mode.");
-            }
+            manifest = _manifest;
+        }
 
-            try
-            {
-                return await httpClient.GetStringAsync(new Uri(manifestPath)).ConfigureAwait(false);
-            }
-            catch (HttpRequestException)
-            {
-                throw new InvalidOperationException("Webpack Dev Server not started!");
-            }
+        try
+        {
+            return manifest.RootElement.GetProperty(bundle).GetString();
+        }
+        catch (KeyNotFoundException)
+        {
+            return null;
+        }
+    }
+
+    private static async Task<string> FetchDevelopmentManifestAsync(HttpClient? httpClient, string manifestPath)
+    {
+        if (httpClient == null)
+        {
+            throw new ArgumentNullException(nameof(httpClient), "HttpClient only available in development mode.");
+        }
+
+        try
+        {
+            return await httpClient.GetStringAsync(new Uri(manifestPath)).ConfigureAwait(false);
+        }
+        catch (HttpRequestException)
+        {
+            throw new InvalidOperationException("Webpack Dev Server not started!");
         }
     }
 }

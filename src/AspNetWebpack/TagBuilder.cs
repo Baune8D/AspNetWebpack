@@ -10,141 +10,140 @@ using System.IO.Abstractions;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace AspNetWebpack
+namespace AspNetWebpack;
+
+/// <summary>
+/// Service for including Webpack assets in UI projects.
+/// </summary>
+public sealed class TagBuilder : ITagBuilder, IDisposable
 {
+    private readonly Dictionary<string, string> _inlineStyles = new();
+    private readonly ISharedSettings _sharedSettings;
+    private readonly IFileSystem _fileSystem;
+
     /// <summary>
-    /// Service for including Webpack assets in UI projects.
+    /// Initializes a new instance of the <see cref="TagBuilder"/> class.
     /// </summary>
-    public sealed class TagBuilder : ITagBuilder, IDisposable
+    /// <param name="sharedSettings">Shared settings.</param>
+    /// <param name="fileSystem">File system.</param>
+    public TagBuilder(ISharedSettings sharedSettings, IFileSystem fileSystem)
     {
-        private readonly Dictionary<string, string> _inlineStyles = new();
-        private readonly ISharedSettings _sharedSettings;
-        private readonly IFileSystem _fileSystem;
+        _sharedSettings = sharedSettings;
+        _fileSystem = fileSystem;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TagBuilder"/> class.
-        /// </summary>
-        /// <param name="sharedSettings">Shared settings.</param>
-        /// <param name="fileSystem">File system.</param>
-        public TagBuilder(ISharedSettings sharedSettings, IFileSystem fileSystem)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TagBuilder"/> class.
+    /// </summary>
+    /// <param name="sharedSettings">Shared settings.</param>
+    /// <param name="fileSystem">File system.</param>
+    /// <param name="httpClientFactory">HttpClient factory.</param>
+    public TagBuilder(ISharedSettings sharedSettings, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
+        : this(sharedSettings, fileSystem)
+    {
+        if (_sharedSettings.DevelopmentMode)
         {
-            _sharedSettings = sharedSettings;
-            _fileSystem = fileSystem;
+            HttpClient = httpClientFactory.CreateClient();
+        }
+    }
+
+    private HttpClient? HttpClient { get; }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        HttpClient?.Dispose();
+    }
+
+    /// <summary>
+    /// Builds the script tag.
+    /// </summary>
+    /// <param name="file">The JS file to use in the tag.</param>
+    /// <param name="load">Enum for modifying script load behavior.</param>
+    /// <returns>A string containing the script tag.</returns>
+    public string BuildScriptTag(string file, ScriptLoad load)
+    {
+        var crossOrigin = string.Empty;
+        if (_sharedSettings.DevelopmentMode)
+        {
+            crossOrigin = "crossorigin=\"anonymous\"";
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TagBuilder"/> class.
-        /// </summary>
-        /// <param name="sharedSettings">Shared settings.</param>
-        /// <param name="fileSystem">File system.</param>
-        /// <param name="httpClientFactory">HttpClient factory.</param>
-        public TagBuilder(ISharedSettings sharedSettings, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
-            : this(sharedSettings, fileSystem)
+        var loadType = _sharedSettings.DevelopmentMode ? " " : string.Empty;
+        switch (load)
         {
-            if (_sharedSettings.DevelopmentMode)
-            {
-                HttpClient = httpClientFactory.CreateClient();
-            }
+            case ScriptLoad.Normal:
+                break;
+            case ScriptLoad.Async:
+                loadType += "async";
+                break;
+            case ScriptLoad.Defer:
+                loadType += "defer";
+                break;
+            case ScriptLoad.AsyncDefer:
+                loadType += "async defer";
+                break;
+            default:
+                throw new InvalidEnumArgumentException(nameof(load), (int)load, typeof(ScriptLoad));
         }
 
-        private HttpClient? HttpClient { get; }
+        return $"<script src=\"{_sharedSettings.AssetsWebPath}{file}\" {crossOrigin}{loadType}></script>";
+    }
 
-        /// <inheritdoc />
-        public void Dispose()
+    /// <summary>
+    /// Builds the link/style tag.
+    /// </summary>
+    /// <param name="file">The CSS file to use in the tag.</param>
+    /// <returns>A string containing the link/style tag.</returns>
+    public string BuildLinkTag(string file)
+    {
+        return $"<link href=\"{_sharedSettings.AssetsWebPath}{file}\" rel=\"stylesheet\" />";
+    }
+
+    /// <summary>
+    /// Builds the link/style tag.
+    /// </summary>
+    /// <param name="file">The CSS file to use in the tag.</param>
+    /// <returns>A string containing the link/style tag.</returns>
+    public async Task<string> BuildStyleTagAsync(string file)
+    {
+        ArgumentNullException.ThrowIfNull(file);
+
+        if (!_sharedSettings.DevelopmentMode && _inlineStyles.TryGetValue(file, out var cached))
         {
-            HttpClient?.Dispose();
+            return cached;
         }
 
-        /// <summary>
-        /// Builds the script tag.
-        /// </summary>
-        /// <param name="file">The JS file to use in the tag.</param>
-        /// <param name="load">Enum for modifying script load behavior.</param>
-        /// <returns>A string containing the script tag.</returns>
-        public string BuildScriptTag(string file, ScriptLoad load)
+        var filename = file;
+        var queryIndex = filename.IndexOf('?', StringComparison.Ordinal);
+        if (queryIndex != -1)
         {
-            var crossOrigin = string.Empty;
-            if (_sharedSettings.DevelopmentMode)
-            {
-                crossOrigin = "crossorigin=\"anonymous\"";
-            }
-
-            var loadType = _sharedSettings.DevelopmentMode ? " " : string.Empty;
-            switch (load)
-            {
-                case ScriptLoad.Normal:
-                    break;
-                case ScriptLoad.Async:
-                    loadType += "async";
-                    break;
-                case ScriptLoad.Defer:
-                    loadType += "defer";
-                    break;
-                case ScriptLoad.AsyncDefer:
-                    loadType += "async defer";
-                    break;
-                default:
-                    throw new InvalidEnumArgumentException(nameof(load), (int)load, typeof(ScriptLoad));
-            }
-
-            return $"<script src=\"{_sharedSettings.AssetsWebPath}{file}\" {crossOrigin}{loadType}></script>";
+            filename = filename.Substring(0, queryIndex);
         }
 
-        /// <summary>
-        /// Builds the link/style tag.
-        /// </summary>
-        /// <param name="file">The CSS file to use in the tag.</param>
-        /// <returns>A string containing the link/style tag.</returns>
-        public string BuildLinkTag(string file)
+        var fullPath = $"{_sharedSettings.AssetsDirectoryPath}{filename}";
+
+        var style = _sharedSettings.DevelopmentMode
+            ? await FetchDevelopmentStyleAsync(HttpClient, fullPath).ConfigureAwait(false)
+            : await _fileSystem.File.ReadAllTextAsync(fullPath).ConfigureAwait(false);
+
+        var result = $"<style>{style}</style>";
+
+        if (!_sharedSettings.DevelopmentMode)
         {
-            return $"<link href=\"{_sharedSettings.AssetsWebPath}{file}\" rel=\"stylesheet\" />";
+            _inlineStyles.Add(file, result);
         }
 
-        /// <summary>
-        /// Builds the link/style tag.
-        /// </summary>
-        /// <param name="file">The CSS file to use in the tag.</param>
-        /// <returns>A string containing the link/style tag.</returns>
-        public async Task<string> BuildStyleTagAsync(string file)
+        return result;
+    }
+
+    private static async Task<string> FetchDevelopmentStyleAsync(HttpClient? httpClient, string fullPath)
+    {
+        if (httpClient == null)
         {
-            ArgumentNullException.ThrowIfNull(file);
-
-            if (!_sharedSettings.DevelopmentMode && _inlineStyles.TryGetValue(file, out var cached))
-            {
-                return cached;
-            }
-
-            var filename = file;
-            var queryIndex = filename.IndexOf('?', StringComparison.Ordinal);
-            if (queryIndex != -1)
-            {
-                filename = filename.Substring(0, queryIndex);
-            }
-
-            var fullPath = $"{_sharedSettings.AssetsDirectoryPath}{filename}";
-
-            var style = _sharedSettings.DevelopmentMode
-                ? await FetchDevelopmentStyleAsync(HttpClient, fullPath).ConfigureAwait(false)
-                : await _fileSystem.File.ReadAllTextAsync(fullPath).ConfigureAwait(false);
-
-            var result = $"<style>{style}</style>";
-
-            if (!_sharedSettings.DevelopmentMode)
-            {
-                _inlineStyles.Add(file, result);
-            }
-
-            return result;
+            throw new ArgumentNullException(nameof(httpClient), "HttpClient only available in development mode.");
         }
 
-        private static async Task<string> FetchDevelopmentStyleAsync(HttpClient? httpClient, string fullPath)
-        {
-            if (httpClient == null)
-            {
-                throw new ArgumentNullException(nameof(httpClient), "HttpClient only available in development mode.");
-            }
-
-            return await httpClient.GetStringAsync(new Uri(fullPath)).ConfigureAwait(false);
-        }
+        return await httpClient.GetStringAsync(new Uri(fullPath)).ConfigureAwait(false);
     }
 }

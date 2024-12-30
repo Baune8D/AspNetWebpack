@@ -8,54 +8,53 @@ using FluentAssertions;
 using Moq;
 using Xunit;
 
-namespace AspNetWebpack.Tests.AssetServiceTests
+namespace AspNetWebpack.Tests.AssetServiceTests;
+
+public sealed class ConstructorTests
 {
-    public sealed class ConstructorTests
+    [Fact]
+    public void Constructor_SharedSettingsNull_ShouldThrowArgumentNullException()
     {
-        [Fact]
-        public void Constructor_SharedSettingsNull_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            var manifestServiceMock = new Mock<IManifestService>();
-            var tagBuilderMock = new Mock<ITagBuilder>();
+        // Arrange
+        var manifestServiceMock = new Mock<IManifestService>();
+        var tagBuilderMock = new Mock<ITagBuilder>();
 
-            // Act
-            Action act = () => _ = new AssetService(null!, manifestServiceMock.Object, tagBuilderMock.Object);
+        // Act
+        Action act = () => _ = new AssetService(null!, manifestServiceMock.Object, tagBuilderMock.Object);
 
-            // Assert
-            act.Should().ThrowExactly<ArgumentNullException>();
-            manifestServiceMock.VerifyNoOtherCalls();
-            tagBuilderMock.VerifyNoOtherCalls();
-        }
+        // Assert
+        act.Should().ThrowExactly<ArgumentNullException>();
+        manifestServiceMock.VerifyNoOtherCalls();
+        tagBuilderMock.VerifyNoOtherCalls();
+    }
 
-        [Fact]
-        public void Constructor_Default_ShouldSetAllVariables()
-        {
-            // Arrange
-            const string assetsDirectoryPath = "SomeDirectoryPath";
-            const string assetsWebPath = "SomeWebPath";
+    [Fact]
+    public void Constructor_Default_ShouldSetAllVariables()
+    {
+        // Arrange
+        const string assetsDirectoryPath = "SomeDirectoryPath";
+        const string assetsWebPath = "SomeWebPath";
 
-            var sharedSettingsMock = new Mock<ISharedSettings>();
+        var sharedSettingsMock = new Mock<ISharedSettings>();
 
-            sharedSettingsMock
-                .SetupGet(x => x.AssetsDirectoryPath)
-                .Returns(assetsDirectoryPath);
+        sharedSettingsMock
+            .SetupGet(x => x.AssetsDirectoryPath)
+            .Returns(assetsDirectoryPath);
 
-            sharedSettingsMock
-                .SetupGet(x => x.AssetsWebPath)
-                .Returns(assetsWebPath);
+        sharedSettingsMock
+            .SetupGet(x => x.AssetsWebPath)
+            .Returns(assetsWebPath);
 
-            var manifestServiceMock = new Mock<IManifestService>();
-            var tagBuilderMock = new Mock<ITagBuilder>();
+        var manifestServiceMock = new Mock<IManifestService>();
+        var tagBuilderMock = new Mock<ITagBuilder>();
 
-            // Act
-            var result = new AssetService(sharedSettingsMock.Object, manifestServiceMock.Object, tagBuilderMock.Object);
+        // Act
+        var result = new AssetService(sharedSettingsMock.Object, manifestServiceMock.Object, tagBuilderMock.Object);
 
-            // Assert
-            result.AssetsDirectoryPath.Should().Be(assetsDirectoryPath);
-            result.AssetsWebPath.Should().Be(assetsWebPath);
-            manifestServiceMock.VerifyNoOtherCalls();
-            tagBuilderMock.VerifyNoOtherCalls();
-        }
+        // Assert
+        result.AssetsDirectoryPath.Should().Be(assetsDirectoryPath);
+        result.AssetsWebPath.Should().Be(assetsWebPath);
+        manifestServiceMock.VerifyNoOtherCalls();
+        tagBuilderMock.VerifyNoOtherCalls();
     }
 }

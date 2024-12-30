@@ -3,23 +3,22 @@
 // Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 // </copyright>
 
-namespace AspNetWebpack
+namespace AspNetWebpack;
+
+/// <summary>
+/// Defines the type of asset.
+/// </summary>
+public enum FileType
 {
     /// <summary>
-    /// Defines the type of asset.
+    /// A .css file.
     /// </summary>
-    public enum FileType
-    {
-        /// <summary>
-        /// A .css file.
-        /// </summary>
-        // ReSharper disable once InconsistentNaming
-        CSS,
+    // ReSharper disable once InconsistentNaming
+    CSS,
 
-        /// <summary>
-        /// A .js file.
-        /// </summary>
-        // ReSharper disable once InconsistentNaming
-        JS,
-    }
+    /// <summary>
+    /// A .js file.
+    /// </summary>
+    // ReSharper disable once InconsistentNaming
+    JS,
 }

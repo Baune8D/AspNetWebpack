@@ -14,268 +14,262 @@ using FluentAssertions;
 using Moq;
 using Xunit;
 
-namespace AspNetWebpack.Tests
+namespace AspNetWebpack.Tests;
+
+public sealed class TagBuilderTests : IDisposable
 {
-    public sealed class TagBuilderTests : IDisposable
+    private const string Bundle = "Bundle.js";
+    private const string HttpClientResponse = "CSS content";
+
+    private readonly Mock<IFileSystem> _fileSystemMock = DependencyMocker.GetFileSystem(HttpClientResponse);
+
+    private TagBuilder? _tagBuilder;
+
+    private static string ValidBundleResult => $"{TestValues.AssetsWebPath}{Bundle}";
+
+    public void Dispose()
     {
-        private const string Bundle = "Bundle.js";
-        private const string HttpClientResponse = "CSS content";
+        _tagBuilder?.Dispose();
+    }
 
-        private readonly Mock<IFileSystem> _fileSystemMock;
+    [Fact]
+    public void BuildScriptTag_InvalidScriptLoad_ShouldThrowInvalidEnumArgumentException()
+    {
+        // Arrange
+        var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
+        _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
 
-        private TagBuilder? _tagBuilder;
+        // Act
+        Action act = () => _tagBuilder.BuildScriptTag(Bundle, (ScriptLoad)6);
 
-        public TagBuilderTests()
-        {
-            _fileSystemMock = DependencyMocker.GetFileSystem(HttpClientResponse);
-        }
+        // Assert
+        act.Should().ThrowExactly<InvalidEnumArgumentException>();
+        sharedSettingsMock.VerifyGet(x => x.DevelopmentMode, Times.Exactly(2));
+        sharedSettingsMock.VerifyNoOtherCalls();
+    }
 
-        private static string ValidBundleResult => $"{TestValues.AssetsWebPath}{Bundle}";
+    [Fact]
+    public void BuildScriptTag_Development_ShouldReturnScriptTag()
+    {
+        // Arrange
+        var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
+        _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
 
-        public void Dispose()
-        {
-            _tagBuilder?.Dispose();
-        }
+        // Act
+        var result = _tagBuilder.BuildScriptTag(Bundle, ScriptLoad.Normal);
 
-        [Fact]
-        public void BuildScriptTag_InvalidScriptLoad_ShouldThrowInvalidEnumArgumentException()
-        {
-            // Arrange
-            var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
+        // Assert
+        result.Should().Contain("crossorigin=\"anonymous\"")
+            .And.NotContain("async")
+            .And.NotContain("defer");
+        VerifyScriptTag(result, sharedSettingsMock);
+    }
 
-            // Act
-            Action act = () => _tagBuilder.BuildScriptTag(Bundle, (ScriptLoad)6);
+    [Fact]
+    public void BuildScriptTag_DevelopmentAsyncScriptLoad_ShouldReturnScriptTag()
+    {
+        // Arrange
+        var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
+        _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
 
-            // Assert
-            act.Should().ThrowExactly<InvalidEnumArgumentException>();
-            sharedSettingsMock.VerifyGet(x => x.DevelopmentMode, Times.Exactly(2));
-            sharedSettingsMock.VerifyNoOtherCalls();
-        }
+        // Act
+        var result = _tagBuilder.BuildScriptTag(Bundle, ScriptLoad.Async);
 
-        [Fact]
-        public void BuildScriptTag_Development_ShouldReturnScriptTag()
-        {
-            // Arrange
-            var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
+        // Assert
+        result.Should().Contain("crossorigin=\"anonymous\"")
+            .And.Contain("async")
+            .And.NotContain("defer");
+        VerifyScriptTag(result, sharedSettingsMock);
+    }
 
-            // Act
-            var result = _tagBuilder.BuildScriptTag(Bundle, ScriptLoad.Normal);
+    [Fact]
+    public void BuildScriptTag_DevelopmentDeferScriptLoad_ShouldReturnScriptTag()
+    {
+        // Arrange
+        var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
+        _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
 
-            // Assert
-            result.Should().Contain("crossorigin=\"anonymous\"")
-                .And.NotContain("async")
-                .And.NotContain("defer");
-            VerifyScriptTag(result, sharedSettingsMock);
-        }
+        // Act
+        var result = _tagBuilder.BuildScriptTag(Bundle, ScriptLoad.Defer);
 
-        [Fact]
-        public void BuildScriptTag_DevelopmentAsyncScriptLoad_ShouldReturnScriptTag()
-        {
-            // Arrange
-            var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
+        // Assert
+        result.Should().Contain("crossorigin=\"anonymous\"")
+            .And.Contain("defer")
+            .And.NotContain("async");
+        VerifyScriptTag(result, sharedSettingsMock);
+    }
 
-            // Act
-            var result = _tagBuilder.BuildScriptTag(Bundle, ScriptLoad.Async);
+    [Fact]
+    public void BuildScriptTag_DevelopmentAsyncDeferScriptLoad_ShouldReturnScriptTag()
+    {
+        // Arrange
+        var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
+        _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
 
-            // Assert
-            result.Should().Contain("crossorigin=\"anonymous\"")
-                .And.Contain("async")
-                .And.NotContain("defer");
-            VerifyScriptTag(result, sharedSettingsMock);
-        }
+        // Act
+        var result = _tagBuilder.BuildScriptTag(Bundle, ScriptLoad.AsyncDefer);
 
-        [Fact]
-        public void BuildScriptTag_DevelopmentDeferScriptLoad_ShouldReturnScriptTag()
-        {
-            // Arrange
-            var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
+        // Assert
+        result.Should().Contain("crossorigin=\"anonymous\"")
+            .And.Contain("async")
+            .And.Contain("defer");
+        VerifyScriptTag(result, sharedSettingsMock);
+    }
 
-            // Act
-            var result = _tagBuilder.BuildScriptTag(Bundle, ScriptLoad.Defer);
+    [Fact]
+    public void BuildScriptTag_Production_ShouldReturnScriptTag()
+    {
+        // Arrange
+        var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Production);
+        _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
 
-            // Assert
-            result.Should().Contain("crossorigin=\"anonymous\"")
-                .And.Contain("defer")
-                .And.NotContain("async");
-            VerifyScriptTag(result, sharedSettingsMock);
-        }
+        // Act
+        var result = _tagBuilder.BuildScriptTag(Bundle, ScriptLoad.Normal);
 
-        [Fact]
-        public void BuildScriptTag_DevelopmentAsyncDeferScriptLoad_ShouldReturnScriptTag()
-        {
-            // Arrange
-            var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
+        // Assert
+        result.Should().NotContain("crossorigin=\"anonymous\"")
+            .And.NotContain("async")
+            .And.NotContain("defer");
+        VerifyScriptTag(result, sharedSettingsMock);
+    }
 
-            // Act
-            var result = _tagBuilder.BuildScriptTag(Bundle, ScriptLoad.AsyncDefer);
+    [Fact]
+    public void BuildLinkTag_Default_ShouldReturnLinkTag()
+    {
+        // Arrange
+        var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
+        _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
 
-            // Assert
-            result.Should().Contain("crossorigin=\"anonymous\"")
-                .And.Contain("async")
-                .And.Contain("defer");
-            VerifyScriptTag(result, sharedSettingsMock);
-        }
+        // Act
+        var result = _tagBuilder.BuildLinkTag(Bundle);
 
-        [Fact]
-        public void BuildScriptTag_Production_ShouldReturnScriptTag()
-        {
-            // Arrange
-            var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Production);
-            _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
+        // Assert
+        result.Should().StartWith("<link ")
+            .And.EndWith(" />")
+            .And.Contain($"href=\"{ValidBundleResult}\"")
+            .And.Contain("rel=\"stylesheet\"");
+        sharedSettingsMock.VerifyGet(x => x.AssetsWebPath, Times.Once);
+        sharedSettingsMock.VerifyNoOtherCalls();
+        _fileSystemMock.VerifyNoOtherCalls();
+    }
 
-            // Act
-            var result = _tagBuilder.BuildScriptTag(Bundle, ScriptLoad.Normal);
+    [Fact]
+    public async Task BuildStyleTag_Null_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
+        _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
 
-            // Assert
-            result.Should().NotContain("crossorigin=\"anonymous\"")
-                .And.NotContain("async")
-                .And.NotContain("defer");
-            VerifyScriptTag(result, sharedSettingsMock);
-        }
+        // Act
+        Func<Task> act = () => _tagBuilder.BuildStyleTagAsync(null!);
 
-        [Fact]
-        public void BuildLinkTag_Default_ShouldReturnLinkTag()
-        {
-            // Arrange
-            var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
+        // Assert
+        await act.Should().ThrowExactlyAsync<ArgumentNullException>();
+        sharedSettingsMock.VerifyNoOtherCalls();
+        _fileSystemMock.VerifyNoOtherCalls();
+    }
 
-            // Act
-            var result = _tagBuilder.BuildLinkTag(Bundle);
+    [Fact]
+    public async Task BuildStyleTag_DevelopmentNoHttpClient_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
+        _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
 
-            // Assert
-            result.Should().StartWith("<link ")
-                .And.EndWith(" />")
-                .And.Contain($"href=\"{ValidBundleResult}\"")
-                .And.Contain("rel=\"stylesheet\"");
-            sharedSettingsMock.VerifyGet(x => x.AssetsWebPath, Times.Once);
-            sharedSettingsMock.VerifyNoOtherCalls();
-            _fileSystemMock.VerifyNoOtherCalls();
-        }
+        // Act
+        Func<Task> act = () => _tagBuilder.BuildStyleTagAsync("InvalidBundle");
 
-        [Fact]
-        public async Task BuildStyleTag_Null_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
+        // Assert
+        await act.Should().ThrowExactlyAsync<ArgumentNullException>();
+        sharedSettingsMock.VerifyGet(x => x.DevelopmentMode, Times.AtLeastOnce);
+        sharedSettingsMock.VerifyGet(x => x.AssetsDirectoryPath, Times.Once);
+        sharedSettingsMock.VerifyNoOtherCalls();
+        _fileSystemMock.VerifyNoOtherCalls();
+    }
 
-            // Act
-            Func<Task> act = () => _tagBuilder.BuildStyleTagAsync(null!);
+    [Fact]
+    public async Task BuildStyleTag_Development_ShouldReturnStyleTag()
+    {
+        // Arrange
+        var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
+        var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(HttpStatusCode.OK, HttpClientResponse);
+        _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object, httpClientFactoryMock.Object);
 
-            // Assert
-            await act.Should().ThrowExactlyAsync<ArgumentNullException>();
-            sharedSettingsMock.VerifyNoOtherCalls();
-            _fileSystemMock.VerifyNoOtherCalls();
-        }
+        // Act
+        var result = await _tagBuilder.BuildStyleTagAsync(Bundle);
+        var result2 = await _tagBuilder.BuildStyleTagAsync(Bundle);
 
-        [Fact]
-        public async Task BuildStyleTag_DevelopmentNoHttpClient_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
+        // Assert
+        VerifyStyleTag(result);
+        VerifyStyleTag(result2);
+        sharedSettingsMock.VerifyGet(x => x.DevelopmentMode, Times.AtLeastOnce);
+        sharedSettingsMock.VerifyGet(x => x.AssetsDirectoryPath, Times.Exactly(2));
+        sharedSettingsMock.VerifyNoOtherCalls();
+        _fileSystemMock.VerifyNoOtherCalls();
+        httpClientFactoryMock.Verify(x => x.CreateClient(It.IsAny<string>()), Times.Once);
+        httpClientFactoryMock.VerifyNoOtherCalls();
+    }
 
-            // Act
-            Func<Task> act = () => _tagBuilder.BuildStyleTagAsync("InvalidBundle");
+    [Fact]
+    public async Task BuildStyleTag_DevelopmentQueryString_ShouldReturnStyleTag()
+    {
+        // Arrange
+        var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
+        var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(HttpStatusCode.OK, HttpClientResponse);
+        _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object, httpClientFactoryMock.Object);
+        var bundle = $"{Bundle}?v=123";
 
-            // Assert
-            await act.Should().ThrowExactlyAsync<ArgumentNullException>();
-            sharedSettingsMock.VerifyGet(x => x.DevelopmentMode, Times.AtLeastOnce);
-            sharedSettingsMock.VerifyGet(x => x.AssetsDirectoryPath, Times.Once);
-            sharedSettingsMock.VerifyNoOtherCalls();
-            _fileSystemMock.VerifyNoOtherCalls();
-        }
+        // Act
+        var result = await _tagBuilder.BuildStyleTagAsync(bundle);
+        var result2 = await _tagBuilder.BuildStyleTagAsync(bundle);
 
-        [Fact]
-        public async Task BuildStyleTag_Development_ShouldReturnStyleTag()
-        {
-            // Arrange
-            var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(HttpStatusCode.OK, HttpClientResponse);
-            _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object, httpClientFactoryMock.Object);
+        // Assert
+        VerifyStyleTag(result);
+        VerifyStyleTag(result2);
+        sharedSettingsMock.VerifyGet(x => x.DevelopmentMode, Times.AtLeastOnce);
+        sharedSettingsMock.VerifyGet(x => x.AssetsDirectoryPath, Times.Exactly(2));
+        sharedSettingsMock.VerifyNoOtherCalls();
+        _fileSystemMock.VerifyNoOtherCalls();
+        httpClientFactoryMock.Verify(x => x.CreateClient(It.IsAny<string>()), Times.Once);
+        httpClientFactoryMock.VerifyNoOtherCalls();
+    }
 
-            // Act
-            var result = await _tagBuilder.BuildStyleTagAsync(Bundle);
-            var result2 = await _tagBuilder.BuildStyleTagAsync(Bundle);
+    [Fact]
+    public async Task BuildStyleTag_Production_ShouldReturnStyleTag()
+    {
+        // Arrange
+        var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Production);
+        _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
 
-            // Assert
-            VerifyStyleTag(result);
-            VerifyStyleTag(result2);
-            sharedSettingsMock.VerifyGet(x => x.DevelopmentMode, Times.AtLeastOnce);
-            sharedSettingsMock.VerifyGet(x => x.AssetsDirectoryPath, Times.Exactly(2));
-            sharedSettingsMock.VerifyNoOtherCalls();
-            _fileSystemMock.VerifyNoOtherCalls();
-            httpClientFactoryMock.Verify(x => x.CreateClient(It.IsAny<string>()), Times.Once);
-            httpClientFactoryMock.VerifyNoOtherCalls();
-        }
+        // Act
+        var result = await _tagBuilder.BuildStyleTagAsync(Bundle);
+        var result2 = await _tagBuilder.BuildStyleTagAsync(Bundle);
 
-        [Fact]
-        public async Task BuildStyleTag_DevelopmentQueryString_ShouldReturnStyleTag()
-        {
-            // Arrange
-            var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Development);
-            var httpClientFactoryMock = DependencyMocker.GetHttpClientFactory(HttpStatusCode.OK, HttpClientResponse);
-            _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object, httpClientFactoryMock.Object);
-            var bundle = $"{Bundle}?v=123";
+        // Assert
+        VerifyStyleTag(result);
+        VerifyStyleTag(result2);
+        sharedSettingsMock.VerifyGet(x => x.DevelopmentMode, Times.AtLeastOnce);
+        sharedSettingsMock.VerifyGet(x => x.AssetsDirectoryPath, Times.Once);
+        sharedSettingsMock.VerifyNoOtherCalls();
+        _fileSystemMock.Verify(x => x.File.ReadAllTextAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        _fileSystemMock.VerifyNoOtherCalls();
+    }
 
-            // Act
-            var result = await _tagBuilder.BuildStyleTagAsync(bundle);
-            var result2 = await _tagBuilder.BuildStyleTagAsync(bundle);
+    private static void VerifyStyleTag(string result)
+    {
+        result.Should().Contain(HttpClientResponse)
+            .And.StartWith("<style>")
+            .And.EndWith("</style>");
+    }
 
-            // Assert
-            VerifyStyleTag(result);
-            VerifyStyleTag(result2);
-            sharedSettingsMock.VerifyGet(x => x.DevelopmentMode, Times.AtLeastOnce);
-            sharedSettingsMock.VerifyGet(x => x.AssetsDirectoryPath, Times.Exactly(2));
-            sharedSettingsMock.VerifyNoOtherCalls();
-            _fileSystemMock.VerifyNoOtherCalls();
-            httpClientFactoryMock.Verify(x => x.CreateClient(It.IsAny<string>()), Times.Once);
-            httpClientFactoryMock.VerifyNoOtherCalls();
-        }
-
-        [Fact]
-        public async Task BuildStyleTag_Production_ShouldReturnStyleTag()
-        {
-            // Arrange
-            var sharedSettingsMock = DependencyMocker.GetSharedSettings(TestValues.Production);
-            _tagBuilder = new TagBuilder(sharedSettingsMock.Object, _fileSystemMock.Object);
-
-            // Act
-            var result = await _tagBuilder.BuildStyleTagAsync(Bundle);
-            var result2 = await _tagBuilder.BuildStyleTagAsync(Bundle);
-
-            // Assert
-            VerifyStyleTag(result);
-            VerifyStyleTag(result2);
-            sharedSettingsMock.VerifyGet(x => x.DevelopmentMode, Times.AtLeastOnce);
-            sharedSettingsMock.VerifyGet(x => x.AssetsDirectoryPath, Times.Once);
-            sharedSettingsMock.VerifyNoOtherCalls();
-            _fileSystemMock.Verify(x => x.File.ReadAllTextAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
-            _fileSystemMock.VerifyNoOtherCalls();
-        }
-
-        private static void VerifyStyleTag(string result)
-        {
-            result.Should().Contain(HttpClientResponse)
-                .And.StartWith("<style>")
-                .And.EndWith("</style>");
-        }
-
-        private void VerifyScriptTag(string result, Mock<ISharedSettings> sharedSettingsMock)
-        {
-            result.Should().StartWith("<script ")
-                .And.EndWith("</script>")
-                .And.Contain($"src=\"{ValidBundleResult}\"");
-            sharedSettingsMock.VerifyGet(x => x.DevelopmentMode, Times.Exactly(2));
-            sharedSettingsMock.VerifyGet(x => x.AssetsWebPath, Times.Once);
-            sharedSettingsMock.VerifyNoOtherCalls();
-            _fileSystemMock.VerifyNoOtherCalls();
-        }
+    private void VerifyScriptTag(string result, Mock<ISharedSettings> sharedSettingsMock)
+    {
+        result.Should().StartWith("<script ")
+            .And.EndWith("</script>")
+            .And.Contain($"src=\"{ValidBundleResult}\"");
+        sharedSettingsMock.VerifyGet(x => x.DevelopmentMode, Times.Exactly(2));
+        sharedSettingsMock.VerifyGet(x => x.AssetsWebPath, Times.Once);
+        sharedSettingsMock.VerifyNoOtherCalls();
+        _fileSystemMock.VerifyNoOtherCalls();
     }
 }

@@ -7,32 +7,31 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace AspNetWebpack
+namespace AspNetWebpack;
+
+/// <summary>
+/// Helper class for getting the bundle name from the view context.
+/// </summary>
+public static class HtmlHelperExtensions
 {
     /// <summary>
-    /// Helper class for getting the bundle name from the view context.
+    /// Gets the bundle name from the view context.
     /// </summary>
-    public static class HtmlHelperExtensions
+    /// <param name="html">The html helper.</param>
+    /// <returns>The bundle name.</returns>
+    public static string GetBundleName(this IHtmlHelper html)
     {
-        /// <summary>
-        /// Gets the bundle name from the view context.
-        /// </summary>
-        /// <param name="html">The html helper.</param>
-        /// <returns>The bundle name.</returns>
-        public static string GetBundleName(this IHtmlHelper html)
-        {
-            ArgumentNullException.ThrowIfNull(html);
+        ArgumentNullException.ThrowIfNull(html);
 
-            var path = html.ViewContext.View.Path;
-            var viewPaths = path
-                .Replace(".cshtml", string.Empty, StringComparison.Ordinal)
-                .Split('/')
-                .ToList();
-            viewPaths.Remove(string.Empty);
-            viewPaths.Remove("Areas");
-            viewPaths.Remove("Views");
-            viewPaths.Remove("Pages");
-            return string.Join("_", viewPaths);
-        }
+        var path = html.ViewContext.View.Path;
+        var viewPaths = path
+            .Replace(".cshtml", string.Empty, StringComparison.Ordinal)
+            .Split('/')
+            .ToList();
+        viewPaths.Remove(string.Empty);
+        viewPaths.Remove("Areas");
+        viewPaths.Remove("Views");
+        viewPaths.Remove("Pages");
+        return string.Join("_", viewPaths);
     }
 }

@@ -10,99 +10,98 @@ using System.Threading;
 using Microsoft.AspNetCore.Hosting;
 using Moq;
 
-namespace AspNetWebpack.Tests.Data
+namespace AspNetWebpack.Tests.Data;
+
+/// <summary>
+/// Static functions for mocking common dependencies.
+/// </summary>
+public static class DependencyMocker
 {
     /// <summary>
-    /// Static functions for mocking common dependencies.
+    /// Mock IWebHostEnvironment.
     /// </summary>
-    public static class DependencyMocker
+    /// <param name="environmentName">The environment name.</param>
+    /// <returns>The WebHostEnvironment object.</returns>
+    public static Mock<IWebHostEnvironment> GetWebHostEnvironment(string environmentName)
     {
-        /// <summary>
-        /// Mock IWebHostEnvironment.
-        /// </summary>
-        /// <param name="environmentName">The environment name.</param>
-        /// <returns>The WebHostEnvironment object.</returns>
-        public static Mock<IWebHostEnvironment> GetWebHostEnvironment(string environmentName)
-        {
-            var webHostEnvironmentMock = new Mock<IWebHostEnvironment>();
+        var webHostEnvironmentMock = new Mock<IWebHostEnvironment>();
 
-            webHostEnvironmentMock
-                .SetupGet(x => x.EnvironmentName)
-                .Returns(environmentName);
+        webHostEnvironmentMock
+            .SetupGet(x => x.EnvironmentName)
+            .Returns(environmentName);
 
-            webHostEnvironmentMock
-                .SetupGet(x => x.WebRootPath)
-                .Returns(TestValues.WebRootPath);
+        webHostEnvironmentMock
+            .SetupGet(x => x.WebRootPath)
+            .Returns(TestValues.WebRootPath);
 
-            return webHostEnvironmentMock;
-        }
+        return webHostEnvironmentMock;
+    }
 
-        /// <summary>
-        /// Mock IFileSystem.
-        /// </summary>
-        /// <param name="fileContent">The response content of ReadAllText.</param>
-        /// <returns>The FileSystem object.</returns>
-        public static Mock<IFileSystem> GetFileSystem(string fileContent)
-        {
-            var fileSystemMock = new Mock<IFileSystem>();
+    /// <summary>
+    /// Mock IFileSystem.
+    /// </summary>
+    /// <param name="fileContent">The response content of ReadAllText.</param>
+    /// <returns>The FileSystem object.</returns>
+    public static Mock<IFileSystem> GetFileSystem(string fileContent)
+    {
+        var fileSystemMock = new Mock<IFileSystem>();
 
-            fileSystemMock
-                .Setup(x => x.File.ReadAllTextAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(fileContent);
+        fileSystemMock
+            .Setup(x => x.File.ReadAllTextAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(fileContent);
 
-            return fileSystemMock;
-        }
+        return fileSystemMock;
+    }
 
-        /// <summary>
-        /// Mock IHttpClientFactory.
-        /// </summary>
-        /// <param name="httpStatusCode">The response status code.</param>
-        /// <param name="content">The response content.</param>
-        /// <param name="json">If the response should be json.</param>
-        /// <returns>The HttpClientFactory object.</returns>
-        public static Mock<IHttpClientFactory> GetHttpClientFactory(HttpStatusCode httpStatusCode, string content = "", bool json = false)
-        {
-            var httpClientFactory = new Mock<IHttpClientFactory>();
+    /// <summary>
+    /// Mock IHttpClientFactory.
+    /// </summary>
+    /// <param name="httpStatusCode">The response status code.</param>
+    /// <param name="content">The response content.</param>
+    /// <param name="json">If the response should be json.</param>
+    /// <returns>The HttpClientFactory object.</returns>
+    public static Mock<IHttpClientFactory> GetHttpClientFactory(HttpStatusCode httpStatusCode, string content = "", bool json = false)
+    {
+        var httpClientFactory = new Mock<IHttpClientFactory>();
 
-            httpClientFactory
-                .Setup(x => x.CreateClient(It.IsAny<string>()))
-                .Returns<string>(_ => new HttpClient(new HttpMessageHandlerStub(httpStatusCode, content, json)));
+        httpClientFactory
+            .Setup(x => x.CreateClient(It.IsAny<string>()))
+            .Returns<string>(_ => new HttpClient(new HttpMessageHandlerStub(httpStatusCode, content, json)));
 
-            return httpClientFactory;
-        }
+        return httpClientFactory;
+    }
 
-        /// <summary>
-        /// Mock ISharedSettings.
-        /// </summary>
-        /// <param name="environmentName">The environment name.</param>
-        /// <returns>The SharedSettings object.</returns>
-        public static Mock<ISharedSettings> GetSharedSettings(string environmentName)
-        {
-            var isDevelopment = environmentName == TestValues.Development;
+    /// <summary>
+    /// Mock ISharedSettings.
+    /// </summary>
+    /// <param name="environmentName">The environment name.</param>
+    /// <returns>The SharedSettings object.</returns>
+    public static Mock<ISharedSettings> GetSharedSettings(string environmentName)
+    {
+        var isDevelopment = environmentName == TestValues.Development;
 
-            var sharedSettings = new Mock<ISharedSettings>();
+        var sharedSettings = new Mock<ISharedSettings>();
 
-            sharedSettings
-                .SetupGet(x => x.DevelopmentMode)
-                .Returns(isDevelopment);
+        sharedSettings
+            .SetupGet(x => x.DevelopmentMode)
+            .Returns(isDevelopment);
 
-            sharedSettings
-                .SetupGet(x => x.AssetsDirectoryPath)
-                .Returns(isDevelopment
-                    ? "https://domain/assets/"
-                    : "/Some/Path/To/Assets/");
+        sharedSettings
+            .SetupGet(x => x.AssetsDirectoryPath)
+            .Returns(isDevelopment
+                ? "https://domain/assets/"
+                : "/Some/Path/To/Assets/");
 
-            sharedSettings
-                .SetupGet(x => x.AssetsWebPath)
-                .Returns(TestValues.AssetsWebPath);
+        sharedSettings
+            .SetupGet(x => x.AssetsWebPath)
+            .Returns(TestValues.AssetsWebPath);
 
-            sharedSettings
-                .SetupGet(x => x.ManifestPath)
-                .Returns(isDevelopment
-                    ? "https://domain/manifest.json"
-                    : "/Some/Path/To/Manifest.json");
+        sharedSettings
+            .SetupGet(x => x.ManifestPath)
+            .Returns(isDevelopment
+                ? "https://domain/manifest.json"
+                : "/Some/Path/To/Manifest.json");
 
-            return sharedSettings;
-        }
+        return sharedSettings;
     }
 }

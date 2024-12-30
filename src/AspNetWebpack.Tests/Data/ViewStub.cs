@@ -7,29 +7,28 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 
-namespace AspNetWebpack.Tests.Data
+namespace AspNetWebpack.Tests.Data;
+
+/// <summary>
+/// Stub class for testing view path.
+/// </summary>
+public class ViewStub : IView
 {
     /// <summary>
-    /// Stub class for testing view path.
+    /// Initializes a new instance of the <see cref="ViewStub"/> class.
     /// </summary>
-    public class ViewStub : IView
+    /// <param name="view">A fixed view path.</param>
+    public ViewStub(string view)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ViewStub"/> class.
-        /// </summary>
-        /// <param name="view">A fixed view path.</param>
-        public ViewStub(string view)
-        {
-            Path = view;
-        }
+        Path = view;
+    }
 
-        /// <inheritdoc />
-        public string Path { get; }
+    /// <inheritdoc />
+    public string Path { get; }
 
-        /// <inheritdoc />
-        public Task RenderAsync(ViewContext context)
-        {
-            throw new System.NotImplementedException();
-        }
+    /// <inheritdoc />
+    public Task RenderAsync(ViewContext context)
+    {
+        throw new System.NotImplementedException();
     }
 }

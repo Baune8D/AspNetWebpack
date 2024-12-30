@@ -5,18 +5,17 @@
 
 using System.Threading.Tasks;
 
-namespace AspNetWebpack
+namespace AspNetWebpack;
+
+/// <summary>
+/// Service for including Webpack assets in UI projects.
+/// </summary>
+public interface IManifestService
 {
     /// <summary>
-    /// Service for including Webpack assets in UI projects.
+    /// Gets the asset filename from the Webpack manifest.
     /// </summary>
-    public interface IManifestService
-    {
-        /// <summary>
-        /// Gets the asset filename from the Webpack manifest.
-        /// </summary>
-        /// <param name="bundle">The name of the Webpack bundle.</param>
-        /// <returns>The asset filename.</returns>
-        Task<string?> GetFromManifestAsync(string bundle);
-    }
+    /// <param name="bundle">The name of the Webpack bundle.</param>
+    /// <returns>The asset filename.</returns>
+    Task<string?> GetFromManifestAsync(string bundle);
 }

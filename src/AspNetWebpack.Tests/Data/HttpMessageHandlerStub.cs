@@ -9,38 +9,37 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AspNetWebpack.Tests.Data
+namespace AspNetWebpack.Tests.Data;
+
+/// <inheritdoc />
+public class HttpMessageHandlerStub : HttpMessageHandler
 {
-    /// <inheritdoc />
-    public class HttpMessageHandlerStub : HttpMessageHandler
+    private readonly HttpStatusCode _httpStatusCode;
+    private readonly string _content;
+    private readonly bool _json;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HttpMessageHandlerStub"/> class.
+    /// </summary>
+    /// <param name="httpStatusCode">The status code to stub for this request.</param>
+    /// <param name="content">The content to stub for this request.</param>
+    /// <param name="json">If the content is json.</param>
+    public HttpMessageHandlerStub(HttpStatusCode httpStatusCode, string content, bool json)
     {
-        private readonly HttpStatusCode _httpStatusCode;
-        private readonly string _content;
-        private readonly bool _json;
+        _httpStatusCode = httpStatusCode;
+        _content = content;
+        _json = json;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpMessageHandlerStub"/> class.
-        /// </summary>
-        /// <param name="httpStatusCode">The status code to stub for this request.</param>
-        /// <param name="content">The content to stub for this request.</param>
-        /// <param name="json">If the content is json.</param>
-        public HttpMessageHandlerStub(HttpStatusCode httpStatusCode, string content, bool json)
+    /// <inheritdoc />
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new HttpResponseMessage
         {
-            _httpStatusCode = httpStatusCode;
-            _content = content;
-            _json = json;
-        }
-
-        /// <inheritdoc />
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(new HttpResponseMessage
-            {
-                StatusCode = _httpStatusCode,
-                Content = _json
-                    ? new StringContent(_content, Encoding.UTF8, "application/json")
-                    : new StringContent(_content),
-            });
-        }
+            StatusCode = _httpStatusCode,
+            Content = _json
+                ? new StringContent(_content, Encoding.UTF8, "application/json")
+                : new StringContent(_content),
+        });
     }
 }

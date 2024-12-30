@@ -11,37 +11,36 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
-namespace AspNetWebpack
+namespace AspNetWebpack;
+
+/// <summary>
+/// Extensions methods for IServiceCollection.
+/// </summary>
+public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Extensions methods for IServiceCollection.
+    /// Adds AssetService and necessary dependencies.
     /// </summary>
-    public static class ServiceCollectionExtensions
+    /// <param name="serviceCollection">The service collection.</param>
+    /// <param name="configuration">The configuration.</param>
+    /// <param name="webHostEnvironment">The hosting environment.</param>
+    /// <returns>The modified service collection.</returns>
+    public static IServiceCollection AddAspNetWebpack(this IServiceCollection serviceCollection, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
     {
-        /// <summary>
-        /// Adds AssetService and necessary dependencies.
-        /// </summary>
-        /// <param name="serviceCollection">The service collection.</param>
-        /// <param name="configuration">The configuration.</param>
-        /// <param name="webHostEnvironment">The hosting environment.</param>
-        /// <returns>The modified service collection.</returns>
-        public static IServiceCollection AddAspNetWebpack(this IServiceCollection serviceCollection, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        if (webHostEnvironment.IsDevelopment())
         {
-            ArgumentNullException.ThrowIfNull(configuration);
-
-            if (webHostEnvironment.IsDevelopment())
-            {
-                serviceCollection.AddHttpClient();
-            }
-
-            serviceCollection.Configure<WebpackOptions>(configuration.GetSection("Webpack"));
-            serviceCollection.TryAddTransient<IFileSystem, FileSystem>();
-            serviceCollection.AddSingleton<ISharedSettings, SharedSettings>();
-            serviceCollection.AddSingleton<ITagBuilder, TagBuilder>();
-            serviceCollection.AddSingleton<IManifestService, ManifestService>();
-            serviceCollection.AddSingleton<IAssetService, AssetService>();
-
-            return serviceCollection;
+            serviceCollection.AddHttpClient();
         }
+
+        serviceCollection.Configure<WebpackOptions>(configuration.GetSection("Webpack"));
+        serviceCollection.TryAddTransient<IFileSystem, FileSystem>();
+        serviceCollection.AddSingleton<ISharedSettings, SharedSettings>();
+        serviceCollection.AddSingleton<ITagBuilder, TagBuilder>();
+        serviceCollection.AddSingleton<IManifestService, ManifestService>();
+        serviceCollection.AddSingleton<IAssetService, AssetService>();
+
+        return serviceCollection;
     }
 }

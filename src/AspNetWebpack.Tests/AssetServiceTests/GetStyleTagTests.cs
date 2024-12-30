@@ -7,112 +7,111 @@ using System.Threading.Tasks;
 using AspNetWebpack.Tests.Data;
 using Xunit;
 
-namespace AspNetWebpack.Tests.AssetServiceTests
+namespace AspNetWebpack.Tests.AssetServiceTests;
+
+public sealed class GetStyleTagTests
 {
-    public sealed class GetStyleTagTests
+    [Fact]
+    public async Task GetStyleTag_EmptyString_ShouldReturnEmptyHtmlString()
     {
-        [Fact]
-        public async Task GetStyleTag_EmptyString_ShouldReturnEmptyHtmlString()
-        {
-            // Arrange
-            var fixture = new GetStyleTagFixture(string.Empty);
+        // Arrange
+        var fixture = new GetStyleTagFixture(string.Empty);
 
-            // Act
-            var result = await fixture.GetStyleTagAsync();
+        // Act
+        var result = await fixture.GetStyleTagAsync();
 
-            // Assert
-            fixture.VerifyEmpty(result);
-        }
+        // Assert
+        fixture.VerifyEmpty(result);
+    }
 
-        [Fact]
-        public async Task GetStyleTag_InvalidBundle_ShouldReturnEmptyHtmlString()
-        {
-            // Arrange
-            var fixture = new GetStyleTagFixture(AssetServiceBaseFixture.InvalidBundle);
+    [Fact]
+    public async Task GetStyleTag_InvalidBundle_ShouldReturnEmptyHtmlString()
+    {
+        // Arrange
+        var fixture = new GetStyleTagFixture(AssetServiceBaseFixture.InvalidBundle);
 
-            // Act
-            var result = await fixture.GetStyleTagAsync();
+        // Act
+        var result = await fixture.GetStyleTagAsync();
 
-            // Assert
-            fixture.VerifyNonExisting(result);
-        }
+        // Assert
+        fixture.VerifyNonExisting(result);
+    }
 
-        [Fact]
-        public async Task GetStyleTag_ValidBundle_ShouldReturnStyleTag()
-        {
-            // Arrange
-            var fixture = new GetStyleTagFixture(AssetServiceBaseFixture.ValidBundleWithoutExtension);
+    [Fact]
+    public async Task GetStyleTag_ValidBundle_ShouldReturnStyleTag()
+    {
+        // Arrange
+        var fixture = new GetStyleTagFixture(AssetServiceBaseFixture.ValidBundleWithoutExtension);
 
-            // Act
-            var result = await fixture.GetStyleTagAsync();
+        // Act
+        var result = await fixture.GetStyleTagAsync();
 
-            // Assert
-            fixture.VerifyExisting(result);
-        }
+        // Assert
+        fixture.VerifyExisting(result);
+    }
 
-        [Fact]
-        public async Task GetStyleTag_ValidBundleWithExtension_ShouldReturnStyleTag()
-        {
-            // Arrange
-            var fixture = new GetStyleTagFixture(GetStyleTagFixture.ValidBundleWithExtension);
+    [Fact]
+    public async Task GetStyleTag_ValidBundleWithExtension_ShouldReturnStyleTag()
+    {
+        // Arrange
+        var fixture = new GetStyleTagFixture(GetStyleTagFixture.ValidBundleWithExtension);
 
-            // Act
-            var result = await fixture.GetStyleTagAsync();
+        // Act
+        var result = await fixture.GetStyleTagAsync();
 
-            // Assert
-            fixture.VerifyExisting(result);
-        }
+        // Assert
+        fixture.VerifyExisting(result);
+    }
 
-        [Fact]
-        public async Task GetStyleTag_FallbackEmptyString_ShouldReturnEmptyHtmlString()
-        {
-            // Arrange
-            var fixture = new GetStyleTagFixture(AssetServiceBaseFixture.InvalidBundle, string.Empty);
+    [Fact]
+    public async Task GetStyleTag_FallbackEmptyString_ShouldReturnEmptyHtmlString()
+    {
+        // Arrange
+        var fixture = new GetStyleTagFixture(AssetServiceBaseFixture.InvalidBundle, string.Empty);
 
-            // Act
-            var result = await fixture.GetStyleTagAsync();
+        // Act
+        var result = await fixture.GetStyleTagAsync();
 
-            // Assert
-            fixture.VerifyFallbackEmpty(result);
-        }
+        // Assert
+        fixture.VerifyFallbackEmpty(result);
+    }
 
-        [Fact]
-        public async Task GetStyleTag_InvalidFallbackBundle_ShouldReturnEmptyHtmlString()
-        {
-            // Arrange
-            var fixture = new GetStyleTagFixture(AssetServiceBaseFixture.InvalidBundle, AssetServiceBaseFixture.InvalidBundle);
+    [Fact]
+    public async Task GetStyleTag_InvalidFallbackBundle_ShouldReturnEmptyHtmlString()
+    {
+        // Arrange
+        var fixture = new GetStyleTagFixture(AssetServiceBaseFixture.InvalidBundle, AssetServiceBaseFixture.InvalidBundle);
 
-            // Act
-            var result = await fixture.GetStyleTagAsync();
+        // Act
+        var result = await fixture.GetStyleTagAsync();
 
-            // Assert
-            fixture.VerifyFallbackNonExisting(result);
-        }
+        // Assert
+        fixture.VerifyFallbackNonExisting(result);
+    }
 
-        [Fact]
-        public async Task GetStyleTag_ValidFallbackBundle_ShouldReturnStyleTag()
-        {
-            // Arrange
-            var fixture = new GetStyleTagFixture(AssetServiceBaseFixture.InvalidBundle, AssetServiceBaseFixture.ValidFallbackBundleWithoutExtension);
+    [Fact]
+    public async Task GetStyleTag_ValidFallbackBundle_ShouldReturnStyleTag()
+    {
+        // Arrange
+        var fixture = new GetStyleTagFixture(AssetServiceBaseFixture.InvalidBundle, AssetServiceBaseFixture.ValidFallbackBundleWithoutExtension);
 
-            // Act
-            var result = await fixture.GetStyleTagAsync();
+        // Act
+        var result = await fixture.GetStyleTagAsync();
 
-            // Assert
-            fixture.VerifyFallbackExisting(result);
-        }
+        // Assert
+        fixture.VerifyFallbackExisting(result);
+    }
 
-        [Fact]
-        public async Task GetStyleTag_ValidFallbackBundleWithExtension_ShouldReturnStyleTag()
-        {
-            // Arrange
-            var fixture = new GetStyleTagFixture(AssetServiceBaseFixture.InvalidBundle, GetStyleTagFixture.ValidFallbackBundleWithExtension);
+    [Fact]
+    public async Task GetStyleTag_ValidFallbackBundleWithExtension_ShouldReturnStyleTag()
+    {
+        // Arrange
+        var fixture = new GetStyleTagFixture(AssetServiceBaseFixture.InvalidBundle, GetStyleTagFixture.ValidFallbackBundleWithExtension);
 
-            // Act
-            var result = await fixture.GetStyleTagAsync();
+        // Act
+        var result = await fixture.GetStyleTagAsync();
 
-            // Assert
-            fixture.VerifyFallbackExisting(result);
-        }
+        // Assert
+        fixture.VerifyFallbackExisting(result);
     }
 }
